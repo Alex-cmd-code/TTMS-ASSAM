@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Transfer Management System | Government of Assam</title>
+  <meta name="description"
+    content="Official Portal for Teacher Transfer Management System (TTMS), Department of School Education, Government of Assam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="assets/emblem_logo.png">
+  <!-- jsPDF for authentic government PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Top Emergency & Helpline Bar -->
+  <div class="top-helpline-bar" id="topHelplineBar">
+    <div class="helpline-left">
+      <span class="helpline-item"><svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24 11.72 11.72 0 003.68.59 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.72 11.72 0 00.59 3.68 1 1 0 01-.24 1.02l-2.23 2.09z" />
+        </svg> 7099919878</span>
+      <span class="helpline-item"><svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24 11.72 11.72 0 003.68.59 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.72 11.72 0 00.59 3.68 1 1 0 01-.24 1.02l-2.23 2.09z" />
+        </svg> 7635974497</span>
+      <span class="helpline-item"><svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24 11.72 11.72 0 003.68.59 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.72 11.72 0 00.59 3.68 1 1 0 01-.24 1.02l-2.23 2.09z" />
+        </svg> 6900468081</span>
+      <span class="helpline-item"><svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+        </svg> ttmscare@gmail.com</span>
+    </div>
+    <div class="helpline-right">
+      <span id="liveClockDisplay">Date: 23-10-2026, Time: 18:53:26 IST</span>
+      <div class="portal-quick-actions">
+        <button class="badge-action-btn" id="topNavAdminBtn">Admin Portal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================== -->
+  <!-- VIEW 1: PUBLIC HOMEPAGE (Landing Page)     -->
+  <!-- ========================================== -->
+  <div id="viewHome" class="app-view active-view">
+    <!-- Public Header -->
+    <header class="public-header">
+      <div class="header-container">
+        <div class="brand-group">
+          <!-- National Emblem of India -->
+          <div class="emblem-wrapper" title="State Emblem of India">
+            <img src="assets/emblem_logo_hd.png" alt="State Emblem of India" class="portal-emblem-img">
+          </div>
+          <div class="brand-text">
+            <h1 class="portal-main-title">Teacher Transfer Management System</h1>
+            <p class="portal-sub-title">Government of Assam</p>
+          </div>
+        </div>
+
+        <div class="public-nav-buttons">
+          <button class="btn btn-outline" id="navHomeFaqBtn">Guidelines</button>
+          <button class="btn btn-secondary" id="navAdminDirectBtn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+            </svg>
+            Admin Portal
+          </button>
+          <button class="btn btn-primary" id="openLoginModalBtn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M10 17l5-5-5-5v10zM19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+            </svg>
+            Login
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section with Assam Classroom Background -->
+    <section class="hero-section">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-content-wrapper">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          DEPARTMENT OF SCHOOL EDUCATION • OFFICIAL PORTAL
+        </div>
+        <h2 class="hero-headline">Transparent & Merit-Based Teacher Transfers</h2>
+        <p class="hero-lead">A single integrated digital gateway for Elementary and Secondary teachers across Assam for
+          seamless online General and Mutual transfer management.</p>
+
+        <div class="hero-action-row">
+          <button class="btn btn-primary btn-lg" id="heroTeacherLoginBtn">
+            <svg class="icon-md" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+            Teacher Sign In
+          </button>
+          <button class="btn btn-accent btn-lg" id="heroAdminLoginBtn">
+            <svg class="icon-md" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
+            </svg>
+            Administration Portal
+          </button>
+        </div>
+
+        <!-- Metric counter cards -->
+        <div class="hero-stats-grid">
+          <div class="stat-card">
+            <span class="stat-number" id="statTeachersCount">1,48,920+</span>
+            <span class="stat-label">Registered Teachers</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="statApplicationsCount">42,150+</span>
+            <span class="stat-label">Transfer Requests</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="statOrdersCount">31,400+</span>
+            <span class="stat-label">Orders Generated</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">35</span>
+            <span class="stat-label">Districts Covered</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notifications and Quick Links Grid (from Screenshot 2) -->
+    <section class="portal-info-section">
+      <div class="info-grid">
+        <!-- Important Notification Card -->
+        <div class="info-card notification-card">
+          <div class="info-card-header notif-header">
+            <h3>Important Notification <span class="badge-new">NEW</span></h3>
+          </div>
+          <div class="info-card-body">
+            <ul class="bullet-list">
+              <li>
+                <strong>Application Timeline:</strong> Applications will be accepted till 11:59 pm of 30th June, 2026.
+                Those who are interested to apply for transfer are requested to apply before this timeline.
+              </li>
+              <li>
+                <strong>Single Transfer Status:</strong> Teachers can log in with their registered mobile number and
+                password to inspect their current transfer status and download approved official transfer orders
+                directly.
+              </li>
+              <li>
+                <strong>Document Verification:</strong> Official transfer order PDFs uploaded by the District /
+                Directorate Administration are available for instantaneous secure download.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Quick Links Card -->
+        <div class="info-card links-card">
+          <div class="info-card-header links-header">
+            <h3>Quick Links</h3>
+          </div>
+          <div class="info-card-body">
+            <ul class="quick-links-list">
+              <li>
+                <a href="#quick-sample" id="quickSampleDownloadLink">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                  </svg>
+                  Click here to download sample form!
+                </a>
+              </li>
+              <li>
+                <a href="#quick-tutorial" id="quickTutorialLink">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 8.64L15.27 12 10 15.36V8.64M8 5v14l11-7L8 5z" />
+                  </svg>
+                  Please click here for tutorial video
+                </a>
+              </li>
+              <li>
+                <a href="#quick-sop" id="quickSopLink">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                  </svg>
+                  Standard Operating Procedures (SOP) & Transfer Rules
+                </a>
+              </li>
+              <li>
+                <a href="#quick-guidelines" id="quickGuidelinesLink">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
+                  </svg>
+                  Guidelines for General & Mutual Transfer 2026
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Public Footer -->
+    <footer class="public-footer">
+      <div class="footer-container">
+        <p>© 2026 Department of School Education, Government of Assam. All Rights Reserved.</p>
+        <p class="footer-sub">Portal designed & maintained for the Directorate of Elementary & Secondary Education,
+          Assam.</p>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- VIEW 2: TEACHER DASHBOARD (Single Transfer Status)      -->
+  <!-- ======================================================== -->
+  <div id="viewTeacherDashboard" class="app-view">
+    <!-- Administrator Inspection Mode Banner (Displayed when Admin is previewing teacher's portal) -->
+    <div id="adminPreviewBanner" class="admin-preview-top-strip" style="display: none;">
+      <div class="admin-preview-info">
+        <span class="admin-preview-badge">ADMINISTRATOR INSPECTION MODE</span>
+        <span class="admin-preview-desc">Inspecting Portal as: <strong id="adminPreviewTeacherName">MANJIT
+            PATGIRI</strong> (<span id="adminPreviewTeacherApp">Intra/EE-001-0013351</span>) • Status: <span
+            class="preview-status-pill" id="adminPreviewTeacherStatus">Pending</span></span>
+      </div>
+      <div class="admin-preview-actions">
+        <button type="button" class="btn btn-sm btn-gold" id="btnAdminEditCurrentTeacher">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+          </svg>
+          Edit All Data & Status
+        </button>
+        <button type="button" class="btn btn-sm btn-white-outline" id="btnAdminReturnHome">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          ← Return to Admin Home
+        </button>
+      </div>
+    </div>
+
+    <!-- Teacher Dashboard Top Header (Matching Image 1) -->
+    <header class="dash-top-header">
+      <div class="dash-header-left">
+        <button class="dash-hamburger-btn" id="sidebarToggleBtn" aria-label="Toggle navigation">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+          </svg>
+        </button>
+        <!-- State Emblem of India -->
+        <div class="dash-emblem" title="State Emblem of India">
+          <img src="assets/emblem_logo_hd.png" alt="State Emblem of India" class="portal-emblem-img-sm">
+        </div>
+        <div class="dash-header-title-box">
+          <div class="dash-dept-line">
+            <span class="dept-text">DEPARTMENT OF SCHOOL EDUCATION</span>
+            <span class="portal-badge-tag">OFFICIAL PORTAL</span>
+          </div>
+          <h2 class="dash-portal-name">Teacher Transfer Management System</h2>
+          <span class="dash-govt-tag">GOVERNMENT OF ASSAM</span>
+        </div>
+      </div>
+
+      <div class="dash-header-right">
+        <!-- Current Module Pill -->
+        <div class="module-indicator-pill">
+          <div class="module-icon-circle">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
+            </svg>
+          </div>
+          <div class="module-info-text">
+            <span class="module-label">CURRENT MODULE</span>
+            <span class="module-value">General Transfer</span>
+          </div>
+          <span class="active-badge-pill">● ACTIVE</span>
+        </div>
+
+        <!-- Signed In User Pill -->
+        <div class="user-profile-menu-container">
+          <button class="user-profile-pill" id="userMenuDropdownBtn">
+            <div class="user-avatar-circle">
+              <svg viewBox="0 0 24 24" fill="#0E4C64">
+                <path
+                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              <span class="user-online-dot"></span>
+            </div>
+            <div class="user-meta-text">
+              <span class="signed-in-label">SIGNED IN</span>
+              <span class="user-name-label" id="currentTeacherNameDisplay">MANJIT PATGIRI</span>
+              <span class="user-role-label">Teacher</span>
+            </div>
+            <svg class="dropdown-arrow-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+          </button>
+          <!-- User Dropdown Menu -->
+          <div class="user-dropdown-popover" id="userDropdownMenu">
+            <div class="dropdown-header">
+              <strong id="dropdownTeacherName">MANJIT PATGIRI</strong>
+              <small id="dropdownTeacherMobile">9706189883</small>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#profile" class="dropdown-item" id="menuMyProfileBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+              </svg>
+              Teacher Profile
+            </a>
+            <a href="#print" class="dropdown-item" id="menuPrintStatusBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+              </svg>
+              Print Application
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item text-danger" id="teacherLogoutBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Layout (Sidebar + Content) -->
+    <div class="dash-layout">
+      <!-- Left Sidebar (Matching Image 1) -->
+      <aside class="dash-sidebar" id="dashSidebar">
+        <!-- Sidebar Navigation Group -->
+        <div class="sidebar-nav-card">
+          <div class="sidebar-header-row">
+            <div class="sitemap-icon-box">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3h7zM4 5h3v4H4V5zm13 0h3v4h-3V5zm0 10h3v4h-3v-4z" />
+              </svg>
+            </div>
+            <div class="sidebar-title-group">
+              <span class="sidebar-kicker">TTMS ADMINISTRATION</span>
+              <strong class="sidebar-heading">Main navigation</strong>
+            </div>
+            <span class="sidebar-green-dot"></span>
+          </div>
+
+          <nav class="sidebar-nav-list">
+            <a href="#dashboard" class="sidebar-link" id="sideNavDashboard">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+            <a href="#profile" class="sidebar-link" id="sideNavProfile">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.11-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
+              </svg>
+              <span>Profile</span>
+            </a>
+            <a href="#mutual" class="sidebar-link" id="sideNavMutual">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+              <span>Mutual Transfer Request</span>
+              <svg class="arrow-right-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+              </svg>
+            </a>
+            <!-- General Transfer Status (Active Item) -->
+            <a href="#transfer-status" class="sidebar-link active-link" id="sideNavGeneralStatus">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
+              </svg>
+              <span>General Transfer Status</span>
+              <span class="active-gold-dot"></span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Secure Administration Card -->
+        <div class="sidebar-secure-card" id="sideNavAdminAccess">
+          <div class="secure-icon-circle">
+            <svg viewBox="0 0 24 24" fill="#8B6508">
+              <path
+                d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+            </svg>
+          </div>
+          <div class="secure-text">
+            <strong>Secure administration</strong>
+            <small>Authorized access only</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Dashboard Content Canvas -->
+      <main class="dash-content-body">
+
+        <!-- Top Title & Action Bar (Matching Image 1) -->
+        <div class="dash-action-bar">
+          <div class="action-bar-title-group">
+            <div class="status-icon-circle">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="content-title">General Transfer Status</h2>
+              <div class="breadcrumb-trail">
+                <span class="home-icon"><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                  </svg> Dashboard</span>
+                <span class="separator">/</span>
+                <span class="current-trail">General Transfer Status</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons: Download, Print, Back -->
+          <div class="action-btn-cluster">
+            <button class="btn btn-navy" id="topDownloadDocsBtn" title="Download Official Documents">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+              </svg>
+              Download
+            </button>
+            <button class="btn btn-outline-navy" id="topPrintPageBtn" title="Print this Status Page">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+              </svg>
+              Print
+            </button>
+            <button class="btn btn-navy" id="topBackBtn" title="Back to Home">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+              </svg>
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Deep Blue Banner (Matching Image 1) -->
+        <div class="transfer-hero-banner">
+          <div class="banner-gold-line"></div>
+          <div class="banner-body">
+            <div class="banner-user-info">
+              <div class="banner-avatar-box">
+                <svg viewBox="0 0 24 24" fill="#F8FAFC">
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+              <div class="banner-text-details">
+                <span class="banner-app-tag">GENERAL TRANSFER APPLICATION</span>
+                <h1 class="banner-teacher-name" id="bannerTeacherName">MANJIT PATGIRI</h1>
+                <p class="banner-subline" id="bannerTeacherSubline">
+                  Intra-district transfer • Assistant Teacher of LPS (SRD) • PACHIM BARTARY LPS
+                </p>
+              </div>
+            </div>
+
+            <div class="banner-meta-cards">
+              <div class="banner-card app-number-card">
+                <span class="meta-card-label">APPLICATION NUMBER</span>
+                <strong class="meta-card-value" id="bannerAppNumber">Intra/EE-001-0013351</strong>
+              </div>
+              <div class="banner-card status-badge-card">
+                <span class="meta-card-label">CURRENT STATUS</span>
+                <div class="status-pill status-pending" id="bannerStatusBadge">
+                  <span class="status-icon">⏳</span>
+                  <span id="bannerStatusText">Pending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jump To Navigation Pills (Matching Image 1) -->
+        <div class="jump-to-strip">
+          <span class="jump-label">JUMP TO</span>
+          <div class="jump-pills-row">
+            <button class="jump-pill active-jump" data-target="sectionOverview">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+              </svg>
+              Overview
+            </button>
+            <button class="jump-pill" data-target="sectionTeacher">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              Teacher
+            </button>
+            <button class="jump-pill" data-target="sectionLocation">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+              Preferred location
+            </button>
+            <button class="jump-pill jump-pill-highlight" data-target="sectionDocuments">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+              Documents
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 1: Application Overview (Matching Image 1) -->
+        <section class="dash-section-card" id="sectionOverview">
+          <div class="dash-section-header">
+            <div class="section-title-wrapper">
+              <div class="sec-icon-circle blue-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="section-heading">Application Overview</h3>
+                <p class="section-subtext">Current request status, recent activity and approval progress.</p>
+              </div>
+            </div>
+            <div class="status-pill status-pending" id="overviewStatusPill">
+              <span class="status-icon">⏳</span>
+              <span id="overviewStatusText">Pending</span>
+            </div>
+          </div>
+
+          <!-- 3 Metric Cards Grid (Submitted On, Last Action On, Latest Remark) -->
+          <div class="overview-metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon-box">
+                <svg viewBox="0 0 24 24" fill="#0E4C64">
+                  <path
+                    d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+                </svg>
+              </div>
+              <div class="metric-data">
+                <span class="metric-label">SUBMITTED ON</span>
+                <strong class="metric-val" id="metricSubmittedOn">19-02-2026</strong>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box">
+                <svg viewBox="0 0 24 24" fill="#0E4C64">
+                  <path
+                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                </svg>
+              </div>
+              <div class="metric-data">
+                <span class="metric-label">LAST ACTION ON</span>
+                <strong class="metric-val" id="metricLastActionOn">19-02-2026</strong>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-box">
+                <svg viewBox="0 0 24 24" fill="#0E4C64">
+                  <path
+                    d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+                </svg>
+              </div>
+              <div class="metric-data">
+                <span class="metric-label">LATEST REMARK</span>
+                <strong class="metric-val text-primary" id="metricLatestRemark">Direct Forward to AA</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alert Callout Box (Matching Image 1) -->
+          <div class="status-alert-box alert-info">
+            <div class="alert-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="#0E4C64">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+              </svg>
+            </div>
+            <div class="alert-content-wrap">
+              <strong class="alert-title" id="alertTitleText">Verification is in progress</strong>
+              <p class="alert-desc" id="alertDescText">The request has been forwarded to the concerned authority for
+                further verification.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: Teacher Details (Matching Image 1 bottom) -->
+        <section class="dash-section-card" id="sectionTeacher">
+          <div class="dash-section-header">
+            <div class="section-title-wrapper">
+              <div class="sec-icon-circle blue-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="section-heading">Teacher Details</h3>
+                <p class="section-subtext">Identity, school assignment and review actions.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="details-table-grid">
+            <div class="detail-cell">
+              <span class="detail-label">Teacher Name</span>
+              <strong class="detail-value" id="detailTeacherName">MANJIT PATGIRI</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Employee Code / TET Roll</span>
+              <strong class="detail-value" id="detailEmpCode">TET-2014-99812</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Designation</span>
+              <strong class="detail-value" id="detailDesignation">Assistant Teacher of LPS (SRD)</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Current School</span>
+              <strong class="detail-value" id="detailSchool">PACHIM BARTARY LPS</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">School U-DISE Code</span>
+              <strong class="detail-value" id="detailUdise">18050214801</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">District & Block</span>
+              <strong class="detail-value" id="detailDistrictBlock">Barpeta • Chenga Block</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Gender & Category</span>
+              <strong class="detail-value" id="detailGenderCategory">Male • General</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Date of Joining</span>
+              <strong class="detail-value" id="detailJoiningService">15-09-2014 (11 Yrs 5 Mos Service)</strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Registered Mobile / Username</span>
+              <strong class="detail-value" id="detailMobile">9706189883</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: Preferred Location -->
+        <section class="dash-section-card" id="sectionLocation">
+          <div class="dash-section-header">
+            <div class="section-title-wrapper">
+              <div class="sec-icon-circle blue-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="section-heading">Preferred Transfer Location</h3>
+                <p class="section-subtext">Choices submitted by the teacher in order of priority.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="preferences-list" id="teacherPreferencesList">
+            <div class="pref-item">
+              <span class="pref-badge">Choice 1</span>
+              <div class="pref-content">
+                <strong>Dakshin Bartary Milan LPS (U-DISE: 18050214804)</strong>
+                <small>Chenga Block, Barpeta District • Reason: Near residence / Medical grounds</small>
+              </div>
+            </div>
+            <div class="pref-item">
+              <span class="pref-badge">Choice 2</span>
+              <div class="pref-content">
+                <strong>Chenga Majalia School (U-DISE: 18050212001)</strong>
+                <small>Chenga Block, Barpeta District • Reason: Spouse serving in same educational block</small>
+              </div>
+            </div>
+            <div class="pref-item">
+              <span class="pref-badge">Choice 3</span>
+              <div class="pref-content">
+                <strong>Tarabari MV School (U-DISE: 18050105202)</strong>
+                <small>Barpeta Block, Barpeta District</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECTION 4: DOCUMENTS DOWNLOAD (The Core User Requirement)  -->
+        <!-- ========================================================= -->
+        <section class="dash-section-card highlight-section" id="sectionDocuments">
+          <div class="dash-section-header">
+            <div class="section-title-wrapper">
+              <div class="sec-icon-circle gold-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="section-heading">Official Documents & Downloads</h3>
+                <p class="section-subtext">Download official PDF orders and documents uploaded by the Administration for
+                  your application.</p>
+              </div>
+            </div>
+            <span class="docs-count-badge" id="teacherDocsCountBadge">1 Document</span>
+          </div>
+
+          <!-- Explanatory Banner -->
+          <div class="docs-policy-callout">
+            <svg class="icon-md text-navy" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
+            <div>
+              <strong>Government Verification & Download Rule:</strong> Only authenticated orders, reports, and transfer
+              certificates uploaded by the authorized Admin can be downloaded from this portal. All documents contain
+              official digital authentication.
+            </div>
+          </div>
+
+          <!-- Document List Container (Populated dynamically) -->
+          <div class="official-docs-grid" id="teacherDocsList">
+            <!-- Dynamic document cards will be rendered here -->
+          </div>
+
+          <!-- Empty state if no documents are uploaded yet -->
+          <div class="empty-docs-placeholder" id="emptyDocsMessage" style="display: none;">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+            <h4>No Documents Uploaded Yet</h4>
+            <p>Your application is currently in the verification pipeline. Once reviewed and signed by the District
+              Authority / Directorate, the official Transfer Order PDF will be available here for download.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- VIEW 3: ADMIN DASHBOARD (Manage Users & Upload PDFs)     -->
+  <!-- ======================================================== -->
+  <div id="viewAdminDashboard" class="app-view">
+    <!-- Admin Top Header -->
+    <header class="admin-top-header">
+      <div class="admin-header-left">
+        <div class="admin-emblem-wrap" title="State Emblem of India">
+          <img src="assets/emblem_logo_hd.png" alt="State Emblem of India" class="portal-emblem-img-sm">
+        </div>
+        <div>
+          <span class="admin-dept-kicker">GOVERNMENT OF ASSAM • DEPARTMENT OF SCHOOL EDUCATION</span>
+          <h2 class="admin-portal-title">TTMS Administrative Control Console</h2>
+        </div>
+      </div>
+
+      <div class="admin-header-right">
+        <span class="admin-user-pill" id="adminOfficerPill" title="Click to Change State Officer Name" style="cursor: pointer;">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+          </svg>
+          <span id="adminOfficerNameDisplay">Dr. S. K. Sarma, ACS (Director)</span>
+        </span>
+        <button class="btn btn-sm btn-gold-outline" id="btnChangeOfficerName" title="Change State Officer / Signatory Details">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+          </svg>
+          Change State Officer
+        </button>
+        <button class="btn btn-outline-white" id="adminHeaderHomeBtn" title="Return to Admin Home Console">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          Admin Home
+        </button>
+        <button class="btn btn-outline-white" id="adminSwitchToPortalBtn">Public Home</button>
+        <button class="btn btn-danger-pill" id="adminLogoutBtn">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Admin Main Body -->
+    <div class="admin-container">
+
+      <!-- Admin Top Breadcrumb & Quick Info Bar -->
+      <div class="admin-breadcrumb-bar">
+        <div class="admin-breadcrumb-left">
+          <span class="crumb-icon"><svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg></span>
+          <a href="#admin-home" class="crumb-link" id="crumbAdminHome">Admin Console</a>
+          <span class="crumb-separator">/</span>
+          <span class="crumb-current" id="adminCurrentTabLabel">Admin Home Overview</span>
+        </div>
+        <div class="admin-breadcrumb-right">
+          <span class="admin-badge-live">● LIVE TERMINAL</span>
+          <span class="admin-dept-sub">State Transfer Cell (Assam)</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs inside Admin -->
+      <div class="admin-tabs-bar">
+        <button class="admin-tab-btn active-tab" data-tab="tabAdminHome" id="tabBtnAdminHome">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          Admin Home
+        </button>
+        <button class="admin-tab-btn" data-tab="tabUsers" id="tabBtnUsers">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+          </svg>
+          Teacher / User Management
+        </button>
+        <button class="admin-tab-btn" data-tab="tabApprovals" id="tabBtnApprovals">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          Status & Approvals Pipeline
+        </button>
+        <button class="admin-tab-btn" data-tab="tabDocs" id="tabBtnDocs">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+          </svg>
+          Upload PDF Documents per User
+        </button>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB 0: ADMIN HOME (Executive Overview & Fast Launch)     -->
+      <!-- ======================================================== -->
+      <div class="admin-tab-content active-content" id="tabAdminHome">
+
+        <!-- Executive Welcome Banner -->
+        <div class="admin-home-banner">
+          <div class="admin-banner-content">
+            <span class="admin-kicker-tag">DIRECTORATE OF ELEMENTARY EDUCATION • KAHILIPARA, GUWAHATI-19</span>
+            <h3 class="admin-banner-heading">State Teacher Transfer Monitoring & Control Center</h3>
+            <p class="admin-banner-desc">Welcome to the central administrative console for online Teacher Transfers
+              across Assam. Inspect teacher profiles, edit complete applicant details, manage multi-tier approval
+              statuses, and issue authenticated government transfer order PDFs.</p>
+            <div class="admin-meta-chips">
+              <span class="meta-chip"><span>●</span> Academic Cycle 2026-27 Active</span>
+              <span class="meta-chip"><span>🏛️</span> Competent Authority: <strong id="bannerOfficerName">Dr. S. K. Sarma, ACS</strong></span>
+              <span class="meta-chip"><span>🔒</span> Official Portal Auth Level: State Nodal Admin</span>
+            </div>
+          </div>
+          <div class="admin-banner-badge-box">
+            <div class="system-time-card">
+              <span class="system-time-lbl">SYSTEM STATUS</span>
+              <strong class="system-time-val text-success">● SECURE & LIVE</strong>
+              <small id="adminHomeLastSync">Last refreshed: Today</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Interactive KPI Cards with Clickable Navigation -->
+        <div class="admin-home-kpi-grid">
+          <div class="home-kpi-card kpi-teal" id="kpiCardTotalTeachers" title="Click to view all teachers">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Registered Teachers</span>
+              <strong class="kpi-number" id="adminTotalTeachersCount">1</strong>
+              <span class="kpi-link">Manage Directory →</span>
+            </div>
+          </div>
+
+          <div class="home-kpi-card kpi-amber" id="kpiCardPending" title="Click to view pending verifications">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Pending Verification</span>
+              <strong class="kpi-number text-amber" id="adminPendingCount">1</strong>
+              <span class="kpi-link">Review Applications →</span>
+            </div>
+          </div>
+
+          <div class="home-kpi-card kpi-blue" id="kpiCardForwarded" title="Click to view applications forwarded to AA">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Forwarded to AA</span>
+              <strong class="kpi-number text-blue" id="adminForwardedCount">1</strong>
+              <span class="kpi-link">Inspect Forwarded →</span>
+            </div>
+          </div>
+
+          <div class="home-kpi-card kpi-green" id="kpiCardApproved"
+            title="Click to view approved transfer applications">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Approved & Sanctioned</span>
+              <strong class="kpi-number text-green" id="adminApprovedCount">0</strong>
+              <span class="kpi-link">View Sanctioned Orders →</span>
+            </div>
+          </div>
+
+          <div class="home-kpi-card kpi-gold" id="kpiCardDocs" title="Click to view document repository">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">PDF Orders Uploaded</span>
+              <strong class="kpi-number text-gold" id="adminTotalDocsCount">1</strong>
+              <span class="kpi-link">Document Center →</span>
+            </div>
+          </div>
+
+          <div class="home-kpi-card kpi-red" id="kpiCardRejected" title="Click to inspect rejected applications">
+            <div class="kpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Rejected / Returned</span>
+              <strong class="kpi-number text-red" id="adminRejectedCount">0</strong>
+              <span class="kpi-link">Inspect Discrepancies →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Launch Action Hub -->
+        <div class="admin-quick-hub-card">
+          <div class="hub-header">
+            <div>
+              <h4>⚡ Quick Administrative Actions</h4>
+              <p>Execute administrative tasks, edit teacher profiles, configure transfer status and upload official
+                orders.</p>
+            </div>
+          </div>
+          <div class="admin-quick-hub-buttons">
+            <button class="hub-action-btn primary" id="hubAddUserBtn">
+              <span class="hub-icon-circ"><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg></span>
+              <div class="hub-btn-text">
+                <strong>Register New Teacher</strong>
+                <small>Create credentials & transfer file</small>
+              </div>
+            </button>
+            <button class="hub-action-btn secondary" id="hubEditUserBtn">
+              <span class="hub-icon-circ"><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg></span>
+              <div class="hub-btn-text">
+                <strong>Edit Teacher & Status</strong>
+                <small>Modify all data, schools & status</small>
+              </div>
+            </button>
+            <button class="hub-action-btn gold" id="hubUploadOrderBtn">
+              <span class="hub-icon-circ"><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" />
+                </svg></span>
+              <div class="hub-btn-text">
+                <strong>Upload & Issue PDF Order</strong>
+                <small>Upload signed order or auto-generate PDF</small>
+              </div>
+            </button>
+            <button class="hub-action-btn info" id="hubViewPendingBtn">
+              <span class="hub-icon-circ"><svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                </svg></span>
+              <div class="hub-btn-text">
+                <strong>Approvals & Status Pipeline</strong>
+                <small>Review pending verifications and remarks</small>
+              </div>
+            </button>
+            <button class="hub-action-btn primary" id="hubChangeOfficerBtn" style="border-left-color: #f59e0b;">
+              <span class="hub-icon-circ" style="background: rgba(245,158,11,0.15); color: #d97706;">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </span>
+              <div class="hub-btn-text">
+                <strong>Change State Officer</strong>
+                <small id="hubOfficerNamePreview">Dr. S. K. Sarma, ACS (Director)</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Registered Applicants & Direct Edit Cards -->
+        <div class="admin-home-section-card">
+          <div class="home-sec-header">
+            <div>
+              <h4>📋 Registered Transfer Applicants & Fast Actions</h4>
+              <p>Quick access to edit teacher information, update approval status, preview portal or upload orders.</p>
+            </div>
+            <button class="btn btn-outline" id="homeViewAllTeachersBtn">View Complete Directory →</button>
+          </div>
+
+          <div class="home-applicant-cards-grid" id="homeApplicantCardsList">
+            <!-- Dynamically populated applicant cards with Edit buttons -->
+          </div>
+        </div>
+
+        <!-- Assam District Transfer Distribution Snapshot Table -->
+        <div class="admin-home-section-card">
+          <div class="home-sec-header">
+            <div>
+              <h4>🗺️ Assam District Transfer Distribution</h4>
+              <p>Active monitoring of teacher transfer applications by district in Assam.</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="homeDistrictTable">
+              <thead>
+                <tr>
+                  <th>District Name</th>
+                  <th>Total Registered Teachers</th>
+                  <th>Pending Verification</th>
+                  <th>Forwarded to AA</th>
+                  <th>Approved & Issued</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="homeDistrictTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ======================================================== -->
+      <!-- TAB 1: User Management (Add User, Edit All Data & Status) -->
+      <!-- ======================================================== -->
+      <div class="admin-tab-content" id="tabUsers">
+        <div class="table-card">
+          <div class="table-card-header">
+            <div>
+              <h3>Teachers & Registered Users Directory</h3>
+              <p>Add new teachers, edit complete personal & service data, configure passwords, and manage transfer
+                applications.</p>
+            </div>
+            <button class="btn btn-primary" id="openAddUserModalBtn">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+              Add New Teacher / User
+            </button>
+          </div>
+
+          <!-- Search & Filter bar -->
+          <div class="table-filter-bar">
+            <div class="search-input-box">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+              </svg>
+              <input type="text" id="adminUserSearchInput"
+                placeholder="Search by Teacher Name, Mobile / Username, School, or Application No...">
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="table-responsive">
+            <table class="data-table" id="adminUsersTable">
+              <thead>
+                <tr>
+                  <th>Teacher / Applicant</th>
+                  <th>Username (Mobile)</th>
+                  <th>Password</th>
+                  <th>Application No</th>
+                  <th>Current School</th>
+                  <th>Status</th>
+                  <th>Uploaded Docs</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB 2: Transfer Status & Approvals Workflow Pipeline     -->
+      <!-- ======================================================== -->
+      <div class="admin-tab-content" id="tabApprovals">
+        <div class="table-card">
+          <div class="table-card-header">
+            <div>
+              <h3>Transfer Applications Approval & Workflow Pipeline</h3>
+              <p>Monitor multi-stage verification status, forward to appointing authorities, record decisions and issue
+                orders.</p>
+            </div>
+            <div class="pipeline-actions-group">
+              <button class="btn btn-outline" id="refreshApprovalsBtn">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                </svg>
+                Refresh Pipeline
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Pills for Workflow -->
+          <div class="workflow-filter-strip">
+            <button class="workflow-filter-pill active" data-filter="all">All Applications (<span
+                id="wfCountAll">0</span>)</button>
+            <button class="workflow-filter-pill" data-filter="Pending">⏳ Pending Verification (<span
+                id="wfCountPending">0</span>)</button>
+            <button class="workflow-filter-pill" data-filter="Direct Forward to AA">➔ Forwarded to AA (<span
+                id="wfCountForwarded">0</span>)</button>
+            <button class="workflow-filter-pill" data-filter="Approved">✓ Approved & Sanctioned (<span
+                id="wfCountApproved">0</span>)</button>
+            <button class="workflow-filter-pill" data-filter="Rejected">✕ Rejected / Returned (<span
+                id="wfCountRejected">0</span>)</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="adminApprovalsTable">
+              <thead>
+                <tr>
+                  <th>Applicant Teacher</th>
+                  <th>Application ID & Type</th>
+                  <th>Current School & District</th>
+                  <th>Preferred Destination School</th>
+                  <th>Current Status</th>
+                  <th>Latest Authority Remark</th>
+                  <th>Last Action Date</th>
+                  <th>Management Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminApprovalsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PDF Document Management (Upload per User) -->
+      <div class="admin-tab-content" id="tabDocs">
+        <div class="admin-upload-grid">
+
+          <!-- Upload Form Panel -->
+          <div class="admin-form-card">
+            <div class="card-title-row">
+              <div class="sec-icon-circle blue-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" />
+                </svg>
+              </div>
+              <div>
+                <h4>Upload Document for Specific Teacher</h4>
+                <p>Select a teacher and upload or generate an official PDF order.</p>
+              </div>
+            </div>
+
+            <form id="adminUploadDocForm" class="standard-form">
+              <div class="form-group">
+                <label for="docTargetUserSelect">Target Teacher / User *</label>
+                <select id="docTargetUserSelect" class="form-control" required>
+                  <!-- Populated dynamically with users -->
+                </select>
+                <small class="form-help">The selected teacher will be able to download this document from their
+                  dashboard.</small>
+              </div>
+
+              <div class="form-group">
+                <label for="docTitleInput">Document Title / Order Name *</label>
+                <input type="text" id="docTitleInput" class="form-control"
+                  placeholder="e.g. Official General Transfer Order 2026" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="docCategorySelect">Document Category</label>
+                  <select id="docCategorySelect" class="form-control">
+                    <option value="Transfer Order">Official Transfer Order</option>
+                    <option value="Relieving Letter">Relieving Letter</option>
+                    <option value="Service Verification">Service Verification Report</option>
+                    <option value="Joining Order">Joining Recommendation</option>
+                    <option value="Clearance Certificate">Clearance Certificate</option>
+                  </select>
+                </div>
+                <div class="form-group col-half">
+                  <label for="docReferenceNumber">Order / Reference Number</label>
+                  <input type="text" id="docReferenceNumber" class="form-control"
+                    placeholder="e.g. E-28841/TTMS/2026/41">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Upload Document File *</label>
+                <div class="upload-options-box">
+                  <div class="file-drop-area" id="fileDropArea">
+                    <input type="file" id="realPdfFileInput" accept=".pdf,.doc,.docx,.png,.jpg"
+                      class="hidden-file-input">
+                    <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                    </svg>
+                    <span id="selectedFileName">Click or Drag & Drop a PDF file here</span>
+                    <small>Supports PDF, DOC, Images (Max 10MB)</small>
+                  </div>
+                  <div class="or-separator"><span>OR</span></div>
+                  <button type="button" class="btn btn-outline-primary w-100" id="btnAutoGenerateGovtPdf">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                    Auto-Generate Signed Assam Govt Official PDF
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="docRemarksInput">Admin Remarks / Instructions for Teacher</label>
+                <textarea id="docRemarksInput" class="form-control" rows="2"
+                  placeholder="e.g. Please print 2 copies and report to the District Elementary Education Officer."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" id="submitUploadDocBtn">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" />
+                </svg>
+                Upload & Make Downloadable for Teacher
+              </button>
+            </form>
+          </div>
+
+          <!-- Document List for Admin -->
+          <div class="admin-docs-list-card">
+            <div class="card-title-row">
+              <div class="sec-icon-circle gold-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                </svg>
+              </div>
+              <div>
+                <h4>All Uploaded Documents</h4>
+                <p>Overview of documents available for download by respective teachers.</p>
+              </div>
+            </div>
+
+            <div class="admin-docs-table-wrapper">
+              <table class="data-table" id="allDocsTable">
+                <thead>
+                  <tr>
+                    <th>Document</th>
+                    <th>Assigned Teacher</th>
+                    <th>Category</th>
+                    <th>Uploaded Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="allDocsTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: AUTHENTIC LOGIN MODAL (Matching Image 2)        -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="login-dialog-box">
+      <!-- Curved Teal Header with Indian Emblem (Matching Image 2) -->
+      <div class="login-modal-header">
+        <div class="login-header-emblem" title="State Emblem of India">
+          <img src="assets/emblem_logo_hd.png" alt="State Emblem of India" class="portal-emblem-img-login">
+        </div>
+        <div class="login-header-title">
+          <span class="l-dept">DEPARTMENT OF SCHOOL EDUCATION</span>
+          <h3 class="l-portal">Teacher Transfer Management System</h3>
+          <span class="l-govt">GOVERNMENT OF ASSAM</span>
+        </div>
+        <button class="modal-close-btn" id="closeLoginModalBtn" aria-label="Close dialog">✕</button>
+      </div>
+
+      <!-- Login Body Card -->
+      <div class="login-modal-body">
+
+        <!-- Welcome Header -->
+        <div class="login-welcome-row">
+          <div class="welcome-icon-box">
+            <svg viewBox="0 0 24 24" fill="#0E4C64">
+              <path
+                d="M10 17l5-5-5-5v10zM19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+            </svg>
+          </div>
+          <div>
+            <span class="login-badge-sub">SECURE SIGN IN</span>
+            <h4 class="login-welcome-title">Welcome back</h4>
+            <p class="login-welcome-sub">Sign in with your registered account to continue to TTMS.</p>
+          </div>
+        </div>
+
+        <!-- Role Selector Switch -->
+        <div class="login-role-tabs">
+          <button type="button" class="role-tab active" id="tabTeacherRole">Teacher Login</button>
+          <button type="button" class="role-tab" id="tabAdminRole">Admin / Officer</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="mainLoginForm" class="login-form">
+          <!-- Username / Mobile -->
+          <div class="input-field-group">
+            <label for="loginUsername">Username</label>
+            <div class="input-with-icon">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </span>
+              <input type="text" id="loginUsername" class="clean-input" placeholder="Enter username" required
+                autocomplete="username">
+            </div>
+          </div>
+
+          <!-- Password with toggle visibility -->
+          <div class="input-field-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-with-icon">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                </svg>
+              </span>
+              <input type="password" id="loginPassword" class="clean-input" placeholder="Enter password" required
+                autocomplete="current-password">
+              <button type="button" class="eye-toggle-btn" id="togglePasswordVisibilityBtn"
+                aria-label="Toggle password view">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Captcha Box (Matching Image 2) -->
+          <div class="captcha-container-box">
+            <span class="captcha-label">YOUR CAPTCHA</span>
+            <div class="captcha-display-row">
+              <div class="captcha-code-frame" id="captchaCodeBox">
+                <span class="captcha-text" id="captchaDisplay">9qUq&L</span>
+                <div class="captcha-lines"></div>
+              </div>
+              <button type="button" class="captcha-refresh-btn" id="refreshCaptchaBtn" title="Refresh Captcha">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                </svg>
+              </button>
+            </div>
+
+            <span class="captcha-label mt-2">ENTER CAPTCHA</span>
+            <div class="input-with-icon">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                </svg>
+              </span>
+              <input type="text" id="enteredCaptcha" class="clean-input" placeholder="Enter Captcha" required>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-navy btn-block" id="signInSubmitBtn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M10 17l5-5-5-5v10zM19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+            </svg>
+            Sign in securely
+          </button>
+
+          <!-- Forgot Password -->
+          <div class="login-footer-links">
+            <a href="#forgot" id="forgotPasswordLink">Forgot your password?</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: ADD NEW TEACHER / USER (For Admin)              -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="addUserModal">
+    <div class="modal-dialog-box modal-lg">
+      <div class="modal-header">
+        <div>
+          <h4>Add New Teacher / User</h4>
+          <p>Register a teacher, generate credentials and setup transfer record.</p>
+        </div>
+        <button class="modal-close-btn" id="closeAddUserModalBtn">✕</button>
+      </div>
+
+      <form id="addUserForm" class="modal-body">
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="newTeacherName">Full Name *</label>
+            <input type="text" id="newTeacherName" class="form-control" placeholder="e.g. BIJOY KR. BARMAN" required>
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherMobile">Mobile Number / Username *</label>
+            <input type="tel" id="newTeacherMobile" class="form-control" placeholder="e.g. 9864012345" required
+              pattern="[0-9]{10}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="newTeacherPassword">Setup User Password *</label>
+            <div class="input-with-action">
+              <input type="text" id="newTeacherPassword" class="form-control" placeholder="Enter or generate password"
+                required>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="btnGenRandomPwd">Generate</button>
+            </div>
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherEmpCode">Employee ID / TET Roll</label>
+            <input type="text" id="newTeacherEmpCode" class="form-control" placeholder="e.g. TET-2019-48211">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="newTeacherDesignation">Designation</label>
+            <input type="text" id="newTeacherDesignation" class="form-control"
+              placeholder="e.g. Assistant Teacher of LPS">
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherSchool">Current School Name *</label>
+            <input type="text" id="newTeacherSchool" class="form-control" placeholder="e.g. RANGIA LPS" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="newTeacherDistrict">District</label>
+            <input type="text" id="newTeacherDistrict" class="form-control" placeholder="e.g. Kamrup (Rural)"
+              value="Barpeta">
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherAppNumber">Application Number</label>
+            <input type="text" id="newTeacherAppNumber" class="form-control" placeholder="Auto-generated if blank">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="newTeacherStatus">Initial Status</label>
+            <select id="newTeacherStatus" class="form-control">
+              <option value="Pending">Pending (Verification in Progress)</option>
+              <option value="Direct Forward to AA">Forwarded to AA</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherRemark">Initial Remark</label>
+            <input type="text" id="newTeacherRemark" class="form-control" value="Direct Forward to AA">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelAddUserBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create User & Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: EDIT TEACHER / USER & STATUS (Admin Full Control) -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="editUserModal">
+    <div class="modal-dialog-box modal-lg edit-modal-container">
+      <div class="modal-header">
+        <div class="modal-header-icon-title">
+          <div class="modal-icon-badge gold-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+            </svg>
+          </div>
+          <div>
+            <h4>Edit Teacher Details & Application Status</h4>
+            <p id="editUserModalSubtitle">Modify personal profile, school assignment, transfer choices, remarks, and
+              approval status.</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="closeEditUserModalBtn">✕</button>
+      </div>
+
+      <form id="editUserForm" class="modal-body custom-scrollbar">
+        <input type="hidden" id="editUserId">
+
+        <!-- Section 1: Personal & Account Credentials -->
+        <div class="form-fieldset">
+          <div class="fieldset-legend">
+            <span class="legend-num">1</span>
+            <strong>Personal Information & Account Credentials</strong>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherName">Full Name *</label>
+              <input type="text" id="editTeacherName" class="form-control" required>
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherMobile">Mobile Number / Username *</label>
+              <input type="tel" id="editTeacherMobile" class="form-control" required pattern="[0-9]{10}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherEmpCode">Employee ID / TET Roll Code</label>
+              <input type="text" id="editTeacherEmpCode" class="form-control">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherPassword">Account Password *</label>
+              <div class="input-with-action">
+                <input type="text" id="editTeacherPassword" class="form-control" required>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnGenEditUserPwd">Generate</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherGender">Gender</label>
+              <select id="editTeacherGender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherCategory">Social Category</label>
+              <select id="editTeacherCategory" class="form-control">
+                <option value="General">General</option>
+                <option value="OBC">OBC</option>
+                <option value="MOBC">MOBC</option>
+                <option value="SC">SC</option>
+                <option value="ST(P)">ST (Plains)</option>
+                <option value="ST(H)">ST (Hills)</option>
+                <option value="EWS">EWS</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: School & Employment Details -->
+        <div class="form-fieldset">
+          <div class="fieldset-legend">
+            <span class="legend-num">2</span>
+            <strong>Current School & Service Assignment</strong>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherDesignation">Designation *</label>
+              <input type="text" id="editTeacherDesignation" class="form-control" required>
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherSchool">Current School Name *</label>
+              <input type="text" id="editTeacherSchool" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherUdise">School U-DISE Code *</label>
+              <input type="text" id="editTeacherUdise" class="form-control" placeholder="11 digits (e.g. 18050214801)"
+                required>
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherDistrict">District *</label>
+              <select id="editTeacherDistrict" class="form-control" required>
+                <option value="Barpeta">Barpeta</option>
+                <option value="Kamrup (Rural)">Kamrup (Rural)</option>
+                <option value="Kamrup (Metro)">Kamrup (Metro)</option>
+                <option value="Nagaon">Nagaon</option>
+                <option value="Dhubri">Dhubri</option>
+                <option value="Cachar">Cachar</option>
+                <option value="Sonitpur">Sonitpur</option>
+                <option value="Jorhat">Jorhat</option>
+                <option value="Dibrugarh">Dibrugarh</option>
+                <option value="Lakhimpur">Lakhimpur</option>
+                <option value="Darrang">Darrang</option>
+                <option value="Bongaigaon">Bongaigaon</option>
+                <option value="Goalpara">Goalpara</option>
+                <option value="Morigaon">Morigaon</option>
+                <option value="Tinsukia">Tinsukia</option>
+                <option value="Sivasagar">Sivasagar</option>
+                <option value="Golaghat">Golaghat</option>
+                <option value="Karimganj">Karimganj</option>
+                <option value="Hailakandi">Hailakandi</option>
+                <option value="Kokrajhar">Kokrajhar</option>
+                <option value="Baksa">Baksa</option>
+                <option value="Chirang">Chirang</option>
+                <option value="Udalguri">Udalguri</option>
+                <option value="Nalbari">Nalbari</option>
+                <option value="Biswanath">Biswanath</option>
+                <option value="Charaideo">Charaideo</option>
+                <option value="Dhemaji">Dhemaji</option>
+                <option value="Hojai">Hojai</option>
+                <option value="Majuli">Majuli</option>
+                <option value="South Salmara">South Salmara</option>
+                <option value="West Karbi Anglong">West Karbi Anglong</option>
+                <option value="Karbi Anglong">Karbi Anglong</option>
+                <option value="Dima Hasao">Dima Hasao</option>
+                <option value="Bajali">Bajali</option>
+                <option value="Tamulpur">Tamulpur</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherBlock">Educational Block</label>
+              <input type="text" id="editTeacherBlock" class="form-control" placeholder="e.g. Chenga Block">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherDateOfJoining">Date of Joining & Service Length</label>
+              <div class="input-with-action">
+                <input type="text" id="editTeacherDateOfJoining" class="form-control" placeholder="e.g. 15-09-2014">
+                <input type="text" id="editTeacherServiceLength" class="form-control" placeholder="e.g. 11 Yrs 5 Mos">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Transfer Application & Preferences -->
+        <div class="form-fieldset">
+          <div class="fieldset-legend">
+            <span class="legend-num">3</span>
+            <strong>Transfer Application & Preferred Locations</strong>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherAppNumber">Application Number</label>
+              <input type="text" id="editTeacherAppNumber" class="form-control">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherAppType">Application Transfer Type</label>
+              <select id="editTeacherAppType" class="form-control">
+                <option value="Intra-district transfer">Intra-district transfer</option>
+                <option value="Inter-district transfer">Inter-district transfer</option>
+                <option value="Mutual transfer">Mutual transfer</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editTeacherDestinationSchool">Transferred / Destination School (If Approved/Allotted)</label>
+            <input type="text" id="editTeacherDestinationSchool" class="form-control"
+              placeholder="e.g. Dakshin Bartary Milan LPS (Chenga Block)">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherChoice1">Preferred Choice 1 School</label>
+              <input type="text" id="editTeacherChoice1" class="form-control"
+                placeholder="e.g. Dakshin Bartary Milan LPS (U-DISE: 18050214804)">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherChoice2">Preferred Choice 2 School</label>
+              <input type="text" id="editTeacherChoice2" class="form-control" placeholder="e.g. Chenga Majalia School">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherChoice3">Preferred Choice 3 School</label>
+              <input type="text" id="editTeacherChoice3" class="form-control" placeholder="e.g. Tarabari MV School">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherReason">Transfer Grounds / Reason</label>
+              <input type="text" id="editTeacherReason" class="form-control"
+                placeholder="e.g. Near residence / Medical grounds / Spouse serving in same block">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Transfer Status & Administrative Workflow -->
+        <div class="form-fieldset highlight-fieldset">
+          <div class="fieldset-legend">
+            <span class="legend-num">4</span>
+            <strong>Application Status & Administrative Workflow (Full Control)</strong>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherStatus"><strong>Application Status *</strong></label>
+              <select id="editTeacherStatus" class="form-control status-select-field" required>
+                <option value="Pending">⏳ Pending (Verification in Progress)</option>
+                <option value="Direct Forward to AA">➔ Direct Forward to AA (Forwarded to Appointing Authority)</option>
+                <option value="Approved">✓ Approved (Transfer Order Sanctioned & Relieving Issued)</option>
+                <option value="Rejected">✕ Rejected (Request Not Feasible)</option>
+                <option value="Under Scrutiny">🔍 Under Scrutiny (District Scrutiny Committee)</option>
+                <option value="Document Correction Required">⚠️ Document Correction Required</option>
+              </select>
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherLastActionOn">Last Action Date</label>
+              <input type="text" id="editTeacherLastActionOn" class="form-control" placeholder="e.g. 19-02-2026">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editTeacherRemark">Latest Remark / Authority Order Note *</label>
+            <input type="text" id="editTeacherRemark" class="form-control"
+              placeholder="e.g. Direct Forward to AA or Approved by DEE" required>
+            <small class="form-help">Displayed on Teacher's Status page under "LATEST REMARK".</small>
+          </div>
+
+          <div class="form-group">
+            <label for="editTeacherAlertTitle">Status Notification Banner Title</label>
+            <input type="text" id="editTeacherAlertTitle" class="form-control"
+              placeholder="e.g. Verification is in progress">
+          </div>
+
+          <div class="form-group">
+            <label for="editTeacherAlertDesc">Status Notification Banner Description</label>
+            <textarea id="editTeacherAlertDesc" class="form-control" rows="2"
+              placeholder="e.g. The request has been forwarded to the concerned authority for further verification."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelEditUserBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="submitEditUserBtn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
+            </svg>
+            Save All Changes & Update Status
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: QUICK STATUS CHANGE                               -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="quickStatusModal">
+    <div class="modal-dialog-box">
+      <div class="modal-header">
+        <div>
+          <h4>Change Transfer Application Status</h4>
+          <p id="quickStatusModalSubtitle">Update workflow status and administrative remark</p>
+        </div>
+        <button class="modal-close-btn" id="closeQuickStatusModalBtn">✕</button>
+      </div>
+
+      <form id="quickStatusForm" class="modal-body">
+        <input type="hidden" id="quickStatusUserId">
+
+        <div class="form-group">
+          <label for="quickStatusSelect">Application Status *</label>
+          <select id="quickStatusSelect" class="form-control" required>
+            <option value="Pending">Pending (Verification in Progress)</option>
+            <option value="Direct Forward to AA">Direct Forward to AA</option>
+            <option value="Approved">Approved (Transfer Order Issued)</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Under Scrutiny">Under Scrutiny</option>
+            <option value="Document Correction Required">Document Correction Required</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="quickStatusRemark">Latest Remark / Authority Instruction *</label>
+          <input type="text" id="quickStatusRemark" class="form-control"
+            placeholder="e.g. Approved by Director of Elementary Education" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelQuickStatusBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Status Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: RESET / SETUP PASSWORD MODAL (Admin)            -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="resetPwdModal">
+    <div class="modal-dialog-box">
+      <div class="modal-header">
+        <div>
+          <h4>Setup User Password</h4>
+          <p id="resetPwdSubtitle">Change password for teacher account</p>
+        </div>
+        <button class="modal-close-btn" id="closeResetPwdModalBtn">✕</button>
+      </div>
+
+      <form id="resetPwdForm" class="modal-body">
+        <input type="hidden" id="resetPwdUserId">
+        <div class="form-group">
+          <label for="newPasswordInput">New Password *</label>
+          <div class="input-with-action">
+            <input type="text" id="newPasswordInput" class="form-control" required placeholder="Enter new password">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnGenResetPwd">Generate</button>
+          </div>
+          <small class="form-help">The user can immediately log in with this new password.</small>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelResetPwdBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: DOCUMENT PREVIEW MODAL (View Official Order)    -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="docPreviewModal">
+    <div class="modal-dialog-box modal-lg">
+      <div class="modal-header">
+        <div>
+          <h4 id="previewDocTitle">Official Document Preview</h4>
+          <p id="previewDocSubtitle">Authenticated Government of Assam Document</p>
+        </div>
+        <button class="modal-close-btn" id="closeDocPreviewModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body" id="docPreviewBody">
+        <!-- Rendered official document content with seal, watermark, signatures -->
+        <div class="official-paper-preview" id="officialPaperView">
+          <div class="doc-watermark">GOVERNMENT OF ASSAM</div>
+
+          <div class="paper-header">
+            <div class="paper-emblem" title="State Emblem of India">
+              <img src="assets/emblem_logo_hd.png" alt="State Emblem of India" class="portal-emblem-img-paper">
+            </div>
+            <h4>GOVERNMENT OF ASSAM</h4>
+            <h5>DEPARTMENT OF SCHOOL EDUCATION</h5>
+            <h6>DIRECTORATE OF ELEMENTARY EDUCATION, KAHILIPARA, GUWAHATI-19</h6>
+            <div class="order-divider"></div>
+          </div>
+
+          <div class="paper-meta-row">
+            <span id="previewOrderRef">No. E-28841/TTMS/2026/013351</span>
+            <span id="previewOrderDate">Dated Kahilipara, the 19-02-2026</span>
+          </div>
+
+          <div class="paper-subject">
+            <strong><u>OFFICIAL TRANSFER & RELIEVING ORDER</u></strong>
+          </div>
+
+          <div class="paper-text" id="previewOrderText">
+            In pursuance of the Assam Elementary Education (Transfer of Teachers) Rules and as approved by the Competent
+            Authority, sanction is hereby accorded to the transfer and posting of the following teacher under TTMS:
+          </div>
+
+          <table class="paper-table" id="previewOrderTable">
+            <thead>
+              <tr>
+                <th>Teacher Name & ID</th>
+                <th>Current School & District</th>
+                <th>Transferred School / Destination</th>
+                <th>Remarks / Category</th>
+              </tr>
+            </thead>
+            <tbody id="previewOrderTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+
+          <div class="paper-terms">
+            <p>1. The teacher should be relieved immediately by the Headmaster / Block Elementary Education Officer.</p>
+            <p>2. No T.A. / D.A. will be admissible as this transfer is issued under General Online Transfer.</p>
+            <p>3. This order is digitally authenticated via Teacher Transfer Management System (hrmsassam.in).</p>
+          </div>
+
+          <div class="paper-signature-row">
+            <div class="digital-stamp">
+              <span class="stamp-verified">✓ DIGITALLY SIGNED</span>
+              <span class="stamp-by">Director of Elementary Education</span>
+              <span class="stamp-state">Government of Assam</span>
+            </div>
+            <div class="signature-box">
+              <p><strong id="previewSignatoryName">(Dr. S. K. Sarma, ACS)</strong></p>
+              <p id="previewSignatoryPost">Director of Elementary Education</p>
+              <p id="previewSignatoryOffice">Assam, Kahilipara, Guwahati-19</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="closePreviewBtn">Close</button>
+        <button type="button" class="btn btn-primary" id="downloadFromPreviewBtn">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+          </svg>
+          Download PDF Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CHANGE STATE OFFICER / APPROVING AUTHORITY       -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="changeOfficerModal">
+    <div class="modal-dialog-box modal-md">
+      <div class="modal-header">
+        <div>
+          <h4>Change State Officer / Competent Authority</h4>
+          <p>Update official Approving Authority details for console display and PDF transfer orders.</p>
+        </div>
+        <button class="modal-close-btn" id="closeChangeOfficerModalBtn">✕</button>
+      </div>
+
+      <form id="changeOfficerForm" class="modal-body">
+        <div class="form-group">
+          <label for="inputOfficerName">State Officer Full Name *</label>
+          <input type="text" id="inputOfficerName" class="form-control" placeholder="e.g. Dr. S. K. Sarma, ACS" required>
+          <small class="form-hint" style="color: #64748b; font-size: 0.8rem; margin-top: 4px; display: block;">This name will be displayed in the Administrative Console and on all generated PDF Transfer Orders.</small>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label for="inputOfficerDesignation">Official Designation / Post *</label>
+          <input type="text" id="inputOfficerDesignation" class="form-control" placeholder="e.g. Director of Elementary Education" required>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label for="inputOfficerDepartment">Department & Location *</label>
+          <input type="text" id="inputOfficerDepartment" class="form-control" placeholder="e.g. Government of Assam, Kahilipara, Guwahati-19" required>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label for="inputOfficerRoleTag">Authority Scope / Role</label>
+          <input type="text" id="inputOfficerRoleTag" class="form-control" placeholder="e.g. State Nodal Approving Authority">
+        </div>
+
+        <div class="modal-footer" style="padding: 18px 0 0; margin-top: 22px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" id="cancelChangeOfficerBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveOfficerBtn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Save State Officer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
