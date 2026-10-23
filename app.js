@@ -19,6 +19,8 @@
       password: 'password123',
       name: 'MANJIT PATGIRI',
       role: 'teacher',
+      department: 'DEE',
+      teacherCategory: 'Regular (SRD)',
       designation: 'Assistant Teacher of LPS (SRD)',
       school: 'PACHIM BARTARY LPS',
       udise: '18050214801',
@@ -48,7 +50,7 @@
           uploadedAt: '19-02-2026 14:30 IST',
           fileSize: '342 KB',
           fileName: 'Transfer_Order_Intra_EE_001_0013351.pdf',
-          fileData: null, // Will use jsPDF engine to generate official styled document
+          fileData: null,
           remarks: 'Transferred to Dakshin Bartary Milan LPS on administrative review.'
         }
       ]
@@ -59,6 +61,8 @@
       password: 'password123',
       name: 'BIJOY KR. BARMAN',
       role: 'teacher',
+      department: 'DEE',
+      teacherCategory: 'Regular',
       designation: 'Assistant Teacher of LPS',
       school: 'RANGIA MODEL LPS',
       udise: '18060104802',
@@ -92,6 +96,41 @@
           remarks: 'Report to the District Elementary Education Officer within 7 days.'
         }
       ]
+    },
+    {
+      id: 'usr_anupama',
+      username: '9435012345',
+      password: 'password123',
+      name: 'ANUPAMA KALITA',
+      role: 'teacher',
+      department: 'SSA',
+      teacherCategory: 'Contractual',
+      designation: 'Contractual Assistant Teacher of UPS (SSA)',
+      school: 'CHENGA MODEL UPPER PRIMARY SCHOOL',
+      udise: '18050215902',
+      district: 'Barpeta',
+      block: 'Chenga',
+      appNumber: 'Intra/EE-003-0091823',
+      appType: 'Intra-district transfer',
+      status: 'Pending',
+      submittedOn: '18-02-2026',
+      lastActionOn: '20-02-2026',
+      latestRemark: 'Forwarded to SSA Sanction Committee',
+      alertTitle: 'Verification is in progress',
+      alertDesc: 'Application is being reviewed by the SSA Sanction Committee under Samagra Shiksha Assam.',
+      empCode: 'SSA-CON-2018-4091',
+      gender: 'Female',
+      category: 'General',
+      dateOfJoining: '12-08-2018',
+      serviceLength: '7 Years 6 Months',
+      destinationSchool: 'Sarthebari Girls UPS (Chenga)',
+      preferences: [
+        'Sarthebari Girls UPS (Chenga)',
+        'Bhella MV School (Barpeta)',
+        'Barpeta Town High School'
+      ],
+      transferReason: 'Distance from domicile & spouse working nearby',
+      documents: []
     }
   ];
 
@@ -123,13 +162,101 @@
   let officerInfo = null;
 
   // ==========================================
-  // 2. STORAGE UTILITIES
+  // 2. STORAGE & STRING UTILITIES
   // ==========================================
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Helper: Determine Teacher Department (DEE or SSA)
+   * Rule: Contractual teachers belong to SSA. Rest others belong to DEE.
+   */
+  function getTeacherDepartment(user) {
+    if (!user) return 'DEE';
+    if (user.department === 'SSA') return 'SSA';
+    if (user.department === 'DEE') return 'DEE';
+    const cat = (user.teacherCategory || '').toLowerCase();
+    const des = (user.designation || '').toLowerCase();
+    if (cat.includes('contract') || cat.includes('ssa') || des.includes('contract') || des.includes('ssa')) {
+      return 'SSA';
+    }
+    return 'DEE';
+  }
+
+  /**
+   * Helper: Get formatted Teacher Category / Cadre Label
+   */
+  function getTeacherCategoryLabel(user) {
+    if (!user) return 'Regular Teacher (DEE)';
+    const dept = getTeacherDepartment(user);
+    if (dept === 'SSA') return 'Contractual Teacher (SSA)';
+    if (user.teacherCategory) {
+      if (user.teacherCategory.toLowerCase().includes('contract')) return 'Contractual Teacher (SSA)';
+      if (user.teacherCategory.toLowerCase().includes('srd')) return 'Regular / SRD (DEE)';
+      return `${user.teacherCategory} (DEE)`;
+    }
+    const des = (user.designation || '').toLowerCase();
+    if (des.includes('srd')) return 'Regular / SRD (DEE)';
+    if (des.includes('provincial')) return 'Provincialised (DEE)';
+    return 'Regular Teacher (DEE)';
+  }
+
+  function getStatusMeta(status) {
+    const s = (status || 'Pending').trim();
+    if (s === 'Approved') {
+      return { cls: 'status-approved', icon: '✓', label: 'Approved' };
+    }
+    if (s === 'Rejected') {
+      return { cls: 'status-rejected', icon: '✕', label: 'Rejected' };
+    }
+    if (s.includes('Forward') || s.includes('AA')) {
+      return { cls: 'status-forwarded', icon: '➔', label: s };
+    }
+    if (s === 'Under Scrutiny') {
+      return { cls: 'status-scrutiny', icon: '🔍', label: 'Under Scrutiny' };
+    }
+    if (s.includes('Correction')) {
+      return { cls: 'status-correction', icon: '⚠️', label: 'Correction Required' };
+    }
+    return { cls: 'status-pending', icon: '⏳', label: s || 'Pending' };
+  }
+
   function loadUsers() {
     try {
       const data = localStorage.getItem(STORAGE_KEY_USERS);
       if (data) {
         usersList = JSON.parse(data);
+        // Automatic category / department synchronization for all loaded records
+        let updated = false;
+        usersList.forEach(u => {
+          const dept = getTeacherDepartment(u);
+          if (u.department !== dept) {
+            u.department = dept;
+            updated = true;
+          }
+          if (!u.teacherCategory) {
+            u.teacherCategory = dept === 'SSA' ? 'Contractual' : 'Regular';
+            updated = true;
+          }
+        });
+        // Ensure SSA contractual sample exists if not present
+        if (!usersList.some(u => getTeacherDepartment(u) === 'SSA')) {
+          const ssaSeed = DEFAULT_USERS.find(u => u.department === 'SSA');
+          if (ssaSeed) {
+            usersList.push(JSON.parse(JSON.stringify(ssaSeed)));
+            updated = true;
+          }
+        }
+        if (updated) {
+          saveUsers();
+        }
       } else {
         usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
         saveUsers();
@@ -181,6 +308,7 @@
   }
 
   function isAdminLoggedIn() {
+    if (currentSession && currentSession.role === 'teacher') return false;
     if (currentSession && currentSession.role === 'admin') return true;
     try {
       const savedAdmin = sessionStorage.getItem(STORAGE_KEY_ADMIN_SESSION) || localStorage.getItem(STORAGE_KEY_ADMIN_SESSION);
@@ -668,8 +796,14 @@
           }
         } else {
           // Teacher Check
-          const teacher = usersList.find(u => u.username === username && u.password === password);
+          loadUsers();
+          const cleanUser = username.trim();
+          const teacher = usersList.find(u =>
+            (u.username === cleanUser || (u.mobile && u.mobile === cleanUser) || (u.empCode && u.empCode === cleanUser)) &&
+            u.password === password
+          );
           if (teacher) {
+            clearAdminSession();
             isAdminPreview = false;
             previewingTeacherId = null;
             saveSession(teacher);
@@ -922,7 +1056,8 @@
     if (topDownloadDocsBtn) {
       topDownloadDocsBtn.addEventListener('click', () => {
         const user = getActiveTeacher();
-        if (user && user.documents && user.documents.length > 0) {
+        if (!user) return;
+        if (user.documents && user.documents.length > 0) {
           downloadDocument(user.documents[0], user);
         } else {
           showToast('No official documents have been uploaded for download yet.', 'info');
@@ -932,13 +1067,22 @@
   }
 
   function getActiveTeacher() {
+    loadUsers();
     if (isAdminPreview && previewingTeacherId) {
       const found = usersList.find(u => u.id === previewingTeacherId);
       if (found) return found;
     }
     if (!currentSession) return usersList[0];
-    const found = usersList.find(u => u.id === currentSession.id);
-    return found || usersList[0];
+    const found = usersList.find(u => 
+      u.id === currentSession.id || 
+      u.username === currentSession.username || 
+      (currentSession.empCode && u.empCode === currentSession.empCode)
+    );
+    if (found) {
+      currentSession = found; // Keep active session synchronized
+      return found;
+    }
+    return usersList[0];
   }
 
   // ==========================================
@@ -949,58 +1093,109 @@
     if (!user) return;
 
     // Header info
-    document.getElementById('currentTeacherNameDisplay').textContent = user.name;
-    document.getElementById('dropdownTeacherName').textContent = user.name;
-    document.getElementById('dropdownTeacherMobile').textContent = user.username;
+    const headerName = document.getElementById('currentTeacherNameDisplay');
+    if (headerName) headerName.textContent = user.name;
+    const dropName = document.getElementById('dropdownTeacherName');
+    if (dropName) dropName.textContent = user.name;
+    const dropMob = document.getElementById('dropdownTeacherMobile');
+    if (dropMob) dropMob.textContent = user.username;
 
     // Hero Deep Blue Banner
-    document.getElementById('bannerTeacherName').textContent = user.name;
-    document.getElementById('bannerTeacherSubline').textContent =
-      `${user.appType} • ${user.designation} • ${user.school}`;
-    document.getElementById('bannerAppNumber').textContent = user.appNumber;
+    const bannerName = document.getElementById('bannerTeacherName');
+    if (bannerName) bannerName.textContent = user.name;
+    const dept = getTeacherDepartment(user);
+    const bannerAppTag = document.getElementById('bannerAppTag');
+    if (bannerAppTag) {
+      bannerAppTag.textContent = `GENERAL TRANSFER APPLICATION • ${dept === 'SSA' ? 'SAMAGRA SHIKSHA ASSAM (SSA)' : 'DIRECTORATE OF ELEMENTARY EDUCATION (DEE)'}`;
+    }
+    const bannerSubline = document.getElementById('bannerTeacherSubline');
+    if (bannerSubline) {
+      bannerSubline.textContent = `${user.appType || 'Intra-district transfer'} • ${user.designation} • ${user.school}`;
+    }
+    const bannerApp = document.getElementById('bannerAppNumber');
+    if (bannerApp) bannerApp.textContent = user.appNumber;
 
-    // Status badges
-    const statusText = user.status || 'Pending';
-    document.getElementById('bannerStatusText').textContent = statusText;
-    document.getElementById('overviewStatusText').textContent = statusText;
-
+    // Status badges (Banner & Overview)
+    const statusMeta = getStatusMeta(user.status);
     const bannerBadge = document.getElementById('bannerStatusBadge');
     const overviewBadge = document.getElementById('overviewStatusPill');
 
     [bannerBadge, overviewBadge].forEach(badge => {
-      badge.className = 'status-pill';
-      if (statusText === 'Approved') {
-        badge.classList.add('status-approved');
-        badge.querySelector('.status-icon').textContent = '✓';
-      } else if (statusText === 'Rejected') {
-        badge.classList.add('status-rejected');
-        badge.querySelector('.status-icon').textContent = '✕';
-      } else if (statusText.includes('Forward') || statusText.includes('AA')) {
-        badge.classList.add('status-forwarded');
-        badge.querySelector('.status-icon').textContent = '➔';
-      } else {
-        badge.classList.add('status-pending');
-        badge.querySelector('.status-icon').textContent = '⏳';
-      }
+      if (!badge) return;
+      badge.className = `status-pill ${statusMeta.cls}`;
+      badge.innerHTML = `<span class="status-icon">${statusMeta.icon}</span> <span class="status-label">${escapeHtml(statusMeta.label)}</span>`;
     });
 
-    // 3 Metric Cards
-    document.getElementById('metricSubmittedOn').textContent = user.submittedOn || '19-02-2026';
-    document.getElementById('metricLastActionOn').textContent = user.lastActionOn || '19-02-2026';
-    document.getElementById('metricLatestRemark').textContent = user.latestRemark || 'Direct Forward to AA';
+    const bannerStatusText = document.getElementById('bannerStatusText');
+    if (bannerStatusText) bannerStatusText.textContent = statusMeta.label;
+    const overviewStatusText = document.getElementById('overviewStatusText');
+    if (overviewStatusText) overviewStatusText.textContent = statusMeta.label;
 
-    // Alert Callout
-    document.getElementById('alertTitleText').textContent = user.alertTitle || 'Verification is in progress';
-    document.getElementById('alertDescText').textContent = user.alertDesc || 'The request has been forwarded to the concerned authority for further verification.';
+    // 3 Metric Cards (Submitted On, Last Action On, Latest Remark)
+    const metricSub = document.getElementById('metricSubmittedOn');
+    if (metricSub) metricSub.textContent = user.submittedOn || '19-02-2026';
+    const metricAct = document.getElementById('metricLastActionOn');
+    if (metricAct) metricAct.textContent = user.lastActionOn || getTodayDateString();
+    const metricRem = document.getElementById('metricLatestRemark');
+    if (metricRem) metricRem.textContent = user.latestRemark || 'Direct Forward to AA';
+
+    // Application Lifecycle Pipeline Stepper
+    renderTeacherWorkflowStepper(user);
+
+    // Alert Callout Box
+    const alertBox = document.getElementById('statusAlertBox') || document.querySelector('.status-alert-box');
+    const alertIconWrap = document.getElementById('alertIconWrap') || (alertBox ? alertBox.querySelector('.alert-icon-wrap') : null);
+    const alertTitle = document.getElementById('alertTitleText');
+    const alertDesc = document.getElementById('alertDescText');
+
+    if (alertTitle) alertTitle.textContent = user.alertTitle || 'Verification is in progress';
+    if (alertDesc) alertDesc.textContent = user.alertDesc || 'The request has been forwarded to the concerned authority for further verification.';
+
+    if (alertBox && alertIconWrap) {
+      alertBox.className = 'status-alert-box';
+      const s = (user.status || '').trim();
+      if (s === 'Approved') {
+        alertBox.classList.add('alert-success');
+        alertIconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="#15803d"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+      } else if (s === 'Rejected') {
+        alertBox.classList.add('alert-danger');
+        alertIconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="#b91c1c"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+      } else if (s.includes('Correction')) {
+        alertBox.classList.add('alert-warning');
+        alertIconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="#b45309"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+      } else {
+        alertBox.classList.add('alert-info');
+        alertIconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="#0E4C64"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+      }
+    }
 
     // Teacher Details Section
-    document.getElementById('detailTeacherName').textContent = user.name;
-    document.getElementById('detailEmpCode').textContent = user.empCode || 'TET-2014-99812';
-    document.getElementById('detailDesignation').textContent = user.designation;
-    document.getElementById('detailSchool').textContent = user.school;
-    document.getElementById('detailUdise').textContent = user.udise || '18050214801';
-    document.getElementById('detailDistrictBlock').textContent = `${user.district} • ${user.block || 'Main'} Block`;
-    document.getElementById('detailMobile').textContent = user.username;
+    const detName = document.getElementById('detailTeacherName');
+    if (detName) detName.textContent = user.name;
+    const detDept = document.getElementById('detailDepartment');
+    if (detDept) {
+      if (dept === 'SSA') {
+        detDept.innerHTML = `<span class="dept-badge dept-badge-ssa"><span class="badge-dot"></span> SSA (Samagra Shiksha Assam)</span>`;
+      } else {
+        detDept.innerHTML = `<span class="dept-badge dept-badge-dee"><span class="badge-dot"></span> DEE (Elementary Education)</span>`;
+      }
+    }
+    const detCat = document.getElementById('detailTeacherCategory');
+    if (detCat) {
+      detCat.textContent = getTeacherCategoryLabel(user);
+    }
+    const detEmp = document.getElementById('detailEmpCode');
+    if (detEmp) detEmp.textContent = user.empCode || 'TET-2014-99812';
+    const detDes = document.getElementById('detailDesignation');
+    if (detDes) detDes.textContent = user.designation;
+    const detSch = document.getElementById('detailSchool');
+    if (detSch) detSch.textContent = user.school;
+    const detUd = document.getElementById('detailUdise');
+    if (detUd) detUd.textContent = user.udise || '18050214801';
+    const detDist = document.getElementById('detailDistrictBlock');
+    if (detDist) detDist.textContent = `${user.district} • ${user.block || 'Main'} Block`;
+    const detMob = document.getElementById('detailMobile');
+    if (detMob) detMob.textContent = user.username;
 
     const detailGenderCategory = document.getElementById('detailGenderCategory');
     if (detailGenderCategory) {
@@ -1015,7 +1210,7 @@
     // Preferred Locations Section
     const prefList = document.getElementById('teacherPreferencesList');
     if (prefList) {
-      const p1 = (user.preferences && user.preferences[0]) || 'Dakshin Bartary Milan LPS (U-DISE: 18050214804)';
+      const p1 = (user.preferences && user.preferences[0]) || user.destinationSchool || 'Dakshin Bartary Milan LPS (U-DISE: 18050214804)';
       const p2 = (user.preferences && user.preferences[1]) || 'Chenga Majalia School (U-DISE: 18050212001)';
       const p3 = (user.preferences && user.preferences[2]) || 'Tarabari MV School (U-DISE: 18050105202)';
       const reason = user.transferReason || 'Near residence / Medical grounds';
@@ -1024,22 +1219,22 @@
         <div class="pref-item">
           <span class="pref-badge">Choice 1</span>
           <div class="pref-content">
-            <strong>${p1}</strong>
-            <small>${user.block || 'Chenga'} Block, ${user.district || 'Barpeta'} District • Reason: ${reason}</small>
+            <strong>${escapeHtml(p1)}</strong>
+            <small>${escapeHtml(user.block || 'Chenga')} Block, ${escapeHtml(user.district || 'Barpeta')} District • Reason: ${escapeHtml(reason)}</small>
           </div>
         </div>
         <div class="pref-item">
           <span class="pref-badge">Choice 2</span>
           <div class="pref-content">
-            <strong>${p2}</strong>
-            <small>${user.block || 'Chenga'} Block, ${user.district || 'Barpeta'} District • Spouse / Block choice</small>
+            <strong>${escapeHtml(p2)}</strong>
+            <small>${escapeHtml(user.block || 'Chenga')} Block, ${escapeHtml(user.district || 'Barpeta')} District • Spouse / Block choice</small>
           </div>
         </div>
         <div class="pref-item">
           <span class="pref-badge">Choice 3</span>
           <div class="pref-content">
-            <strong>${p3}</strong>
-            <small>${user.district || 'Barpeta'} District</small>
+            <strong>${escapeHtml(p3)}</strong>
+            <small>${escapeHtml(user.district || 'Barpeta')} District</small>
           </div>
         </div>
       `;
@@ -1050,9 +1245,12 @@
       const banner = document.getElementById('adminPreviewBanner');
       if (banner) {
         banner.style.display = 'flex';
-        document.getElementById('adminPreviewTeacherName').textContent = user.name;
-        document.getElementById('adminPreviewTeacherApp').textContent = user.appNumber;
-        document.getElementById('adminPreviewTeacherStatus').textContent = user.status;
+        const pName = document.getElementById('adminPreviewTeacherName');
+        if (pName) pName.textContent = user.name;
+        const pApp = document.getElementById('adminPreviewTeacherApp');
+        if (pApp) pApp.textContent = user.appNumber;
+        const pStat = document.getElementById('adminPreviewTeacherStatus');
+        if (pStat) pStat.textContent = user.status;
       }
     }
 
@@ -1060,21 +1258,131 @@
     renderTeacherDocumentsSection(user);
   }
 
+  function renderTeacherWorkflowStepper(user) {
+    const stepperContainer = document.getElementById('teacherWorkflowStepper');
+    const stageBadge = document.getElementById('stepperStageBadge');
+    if (!stepperContainer) return;
+
+    const dept = getTeacherDepartment(user);
+    // Automatic committee title as per teacher category & department:
+    // For SSA contractual teachers: SSA Sanction Committee
+    // For DEE (regular and rest others): DEE Sanction Committee
+    const sanctionCommittee = dept === 'SSA' ? 'SSA Sanction Committee' : 'DEE Sanction Committee';
+
+    const s = (user.status || 'Pending').trim();
+    let currentStage = 1;
+    let badgeText = 'Stage 1 of 5';
+
+    let stepStates = [
+      { num: 1, title: 'Submitted', subtitle: user.submittedOn || 'Application Logged', state: 'completed' },
+      { num: 2, title: 'District Scrutiny', subtitle: 'BEEO / DEEO Verification', state: 'active' },
+      { num: 3, title: 'Forwarded to AA', subtitle: 'Appointing Authority', state: 'upcoming' },
+      { num: 4, title: 'Directorate Approval', subtitle: sanctionCommittee, state: 'upcoming' },
+      { num: 5, title: 'Order Issued', subtitle: 'Official Order Signed', state: 'upcoming' }
+    ];
+
+    if (s === 'Pending') {
+      currentStage = 2;
+      badgeText = 'Stage 2: District Verification';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'active';
+      stepStates[1].subtitle = 'Verification In Progress';
+    } else if (s === 'Under Scrutiny') {
+      currentStage = 2;
+      badgeText = 'Stage 2: Under Detailed Scrutiny';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'warning';
+      stepStates[1].subtitle = 'Scrutiny Committee Review';
+    } else if (s.includes('Correction')) {
+      currentStage = 2;
+      badgeText = 'Stage 2: Document Correction Req.';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'warning';
+      stepStates[1].subtitle = 'Action Required';
+    } else if (s.includes('Forward') || s.includes('AA')) {
+      currentStage = 3;
+      badgeText = 'Stage 3: Forwarded to AA';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'completed';
+      stepStates[2].state = 'active';
+      stepStates[2].subtitle = user.latestRemark || 'Direct Forward to AA';
+      stepStates[3].subtitle = sanctionCommittee;
+    } else if (s.includes('Directorate') || s.includes('Sanction')) {
+      currentStage = 4;
+      badgeText = `Stage 4: ${dept === 'SSA' ? 'SSA' : 'DEE'} Approval`;
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'completed';
+      stepStates[2].state = 'completed';
+      stepStates[3].state = 'active';
+      stepStates[3].subtitle = `${sanctionCommittee} Review`;
+    } else if (s === 'Approved') {
+      currentStage = 5;
+      badgeText = 'Stage 5 of 5: Order Issued & Signed';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'completed';
+      stepStates[2].state = 'completed';
+      stepStates[3].state = 'completed';
+      stepStates[3].subtitle = `${sanctionCommittee} (Approved)`;
+      stepStates[4].state = 'completed';
+      stepStates[4].subtitle = 'Signed & Ready for Download';
+    } else if (s === 'Rejected') {
+      currentStage = 3;
+      badgeText = 'Application Disallowed';
+      stepStates[0].state = 'completed';
+      stepStates[1].state = 'completed';
+      stepStates[2].state = 'rejected';
+      stepStates[2].subtitle = user.latestRemark || 'Request Rejected';
+    }
+
+    if (stageBadge) stageBadge.textContent = badgeText;
+
+    stepperContainer.innerHTML = stepStates.map(step => {
+      let icon = step.num;
+      if (step.state === 'completed') icon = '✓';
+      else if (step.state === 'warning') icon = '⚠️';
+      else if (step.state === 'rejected') icon = '✕';
+
+      return `
+        <div class="stepper-step ${step.state}">
+          <div class="step-node">${icon}</div>
+          <div class="step-connector"></div>
+          <span class="step-title">${escapeHtml(step.title)}</span>
+          <small class="step-subtitle">${escapeHtml(step.subtitle)}</small>
+        </div>
+      `;
+    }).join('');
+  }
+
   function renderTeacherDocumentsSection(user) {
     const docsListContainer = document.getElementById('teacherDocsList');
     const emptyDocsMessage = document.getElementById('emptyDocsMessage');
     const docsCountBadge = document.getElementById('teacherDocsCountBadge');
 
+    if (!docsListContainer) return;
+    if (!user) return;
+    if (!user.documents) user.documents = [];
+
     const docs = user.documents || [];
-    docsCountBadge.textContent = `${docs.length} Document${docs.length === 1 ? '' : 's'}`;
+    if (docsCountBadge) {
+      docsCountBadge.textContent = `${docs.length} Document${docs.length === 1 ? '' : 's'}`;
+    }
 
     if (docs.length === 0) {
       docsListContainer.innerHTML = '';
-      emptyDocsMessage.style.display = 'block';
+      if (emptyDocsMessage) {
+        emptyDocsMessage.style.display = 'block';
+        emptyDocsMessage.innerHTML = `
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+          </svg>
+          <h4>No Documents Uploaded Yet</h4>
+          <p>Your application is currently <strong>${escapeHtml(user.status || 'Pending')}</strong> (${escapeHtml(user.latestRemark || 'Under Review')}). Once approved and signed by the Directorate, the official Transfer Order PDF will be available here for download.</p>
+        `;
+      }
       return;
     }
 
-    emptyDocsMessage.style.display = 'none';
+    if (emptyDocsMessage) emptyDocsMessage.style.display = 'none';
     docsListContainer.innerHTML = '';
 
     docs.forEach(doc => {
@@ -1089,24 +1397,24 @@
           </div>
           <div class="doc-info-block">
             <div class="doc-title-row">
-              <strong>${doc.title}</strong>
-              <span class="doc-category-tag">${doc.category || 'Official Order'}</span>
+              <strong>${escapeHtml(doc.title)}</strong>
+              <span class="doc-category-tag">${escapeHtml(doc.category || 'Official Order')}</span>
             </div>
             <div class="doc-details-subline">
-              <span>Ref: ${doc.refNumber || user.appNumber}</span> • 
-              <span>Uploaded: ${doc.uploadedAt}</span> • 
-              <span>Size: ${doc.fileSize || '340 KB'}</span>
+              <span>Ref: <strong>${escapeHtml(doc.refNumber || user.appNumber)}</strong></span> • 
+              <span>Uploaded: ${escapeHtml(doc.uploadedAt)}</span> • 
+              <span>Size: ${escapeHtml(doc.fileSize || '340 KB')}</span>
             </div>
-            ${doc.remarks ? `<small class="text-primary mt-2"><strong>Admin Note:</strong> ${doc.remarks}</small>` : ''}
+            ${doc.remarks ? `<small class="text-primary mt-2" style="display:block;"><strong>Admin Note:</strong> ${escapeHtml(doc.remarks)}</small>` : ''}
           </div>
         </div>
 
         <div class="doc-action-cluster">
-          <button class="btn btn-secondary btn-sm btn-preview-doc" data-doc-id="${doc.id}">
+          <button class="btn btn-secondary btn-sm btn-preview-doc" data-doc-id="${escapeHtml(doc.id)}">
             <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             Preview
           </button>
-          <button class="btn btn-navy btn-sm btn-download-doc" data-doc-id="${doc.id}">
+          <button class="btn btn-navy btn-sm btn-download-doc" data-doc-id="${escapeHtml(doc.id)}">
             <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
             Download PDF
           </button>
@@ -1308,6 +1616,8 @@
         const password = document.getElementById('newTeacherPassword').value.trim();
         const empCode = document.getElementById('newTeacherEmpCode').value.trim() || `TET-${Math.floor(2010 + Math.random() * 14)}-${Math.floor(10000 + Math.random() * 90000)}`;
         const designation = document.getElementById('newTeacherDesignation').value.trim() || 'Assistant Teacher of LPS';
+        const catType = document.getElementById('newTeacherCategoryType') ? document.getElementById('newTeacherCategoryType').value : 'Regular';
+        const dept = (catType === 'Contractual') ? 'SSA' : 'DEE';
         const school = document.getElementById('newTeacherSchool').value.trim();
         const district = document.getElementById('newTeacherDistrict').value.trim() || 'Barpeta';
         let appNumber = document.getElementById('newTeacherAppNumber').value.trim();
@@ -1329,6 +1639,8 @@
           password: password,
           name: name.toUpperCase(),
           role: 'teacher',
+          department: dept,
+          teacherCategory: catType,
           designation: designation,
           school: school.toUpperCase(),
           udise: `18${Math.floor(100000000 + Math.random() * 900000000)}`,
@@ -1339,7 +1651,7 @@
           status: status,
           submittedOn: getTodayDateString(),
           lastActionOn: getTodayDateString(),
-          latestRemark: remark || 'Direct Forward to AA',
+          latestRemark: remark || (dept === 'SSA' ? 'Forwarded to SSA Sanction Committee' : 'Direct Forward to AA'),
           alertTitle: status === 'Approved' ? 'Transfer Application Approved' : 'Verification is in progress',
           alertDesc: status === 'Approved' ? 'The competent authority has approved your transfer.' : 'The request has been forwarded to the concerned authority for further verification.',
           empCode: empCode,
@@ -1361,7 +1673,7 @@
         saveUsers();
         addUserModal.classList.remove('show');
         addUserForm.reset();
-        showToast(`Teacher "${newUser.name}" added successfully with password "${newUser.password}"!`, 'success');
+        showToast(`Teacher "${newUser.name}" (${dept} - ${catType}) added successfully!`, 'success');
         renderAdminDashboard();
       });
     }
@@ -1406,6 +1718,8 @@
         const category = document.getElementById('editTeacherCategory').value;
 
         const designation = document.getElementById('editTeacherDesignation').value.trim();
+        const catType = document.getElementById('editTeacherCategoryType') ? document.getElementById('editTeacherCategoryType').value : 'Regular';
+        const dept = (catType === 'Contractual') ? 'SSA' : 'DEE';
         const school = document.getElementById('editTeacherSchool').value.trim();
         const udise = document.getElementById('editTeacherUdise').value.trim();
         const district = document.getElementById('editTeacherDistrict').value;
@@ -1442,6 +1756,8 @@
         user.gender = gender;
         user.category = category;
 
+        user.department = dept;
+        user.teacherCategory = catType;
         user.designation = designation;
         user.school = school.toUpperCase();
         user.udise = udise;
@@ -1464,12 +1780,12 @@
 
         saveUsers();
         editUserModal.classList.remove('show');
-        showToast(`All teacher data & status successfully updated for "${user.name}"!`, 'success');
+        showToast(`Updated record for "${user.name}" (${dept} - ${catType})!`, 'success');
 
         renderAdminDashboard();
 
-        // If currently previewing this teacher, refresh their view immediately
-        if (isAdminPreview && previewingTeacherId === user.id) {
+        // If currently previewing or logged in as this teacher, refresh their view immediately
+        if ((isAdminPreview && previewingTeacherId === user.id) || (currentSession && (currentSession.id === user.id || currentSession.username === user.username))) {
           renderTeacherDashboard();
         }
       });
@@ -1505,7 +1821,7 @@
 
           if (status === 'Approved') {
             user.alertTitle = 'Transfer Application Approved';
-            user.alertDesc = 'The Directorate has approved your transfer request. Official order is available for download.';
+            user.alertDesc = 'The Directorate has approved your transfer request.';
           } else if (status === 'Rejected') {
             user.alertTitle = 'Transfer Request Rejected';
             user.alertDesc = 'Please contact your District Elementary Education Officer for details.';
@@ -1525,7 +1841,7 @@
           showToast(`Status updated to "${status}" for ${user.name}!`, 'success');
           renderAdminDashboard();
 
-          if (isAdminPreview && previewingTeacherId === user.id) {
+          if ((isAdminPreview && previewingTeacherId === user.id) || (currentSession && (currentSession.id === user.id || currentSession.username === user.username))) {
             renderTeacherDashboard();
           }
         }
@@ -1620,29 +1936,6 @@
       reader.readAsDataURL(file);
     }
 
-    // Auto-generate official signed Govt PDF button
-    const btnAutoGenerateGovtPdf = document.getElementById('btnAutoGenerateGovtPdf');
-    if (btnAutoGenerateGovtPdf) {
-      btnAutoGenerateGovtPdf.addEventListener('click', () => {
-        const targetUserId = document.getElementById('docTargetUserSelect').value;
-        const targetUser = usersList.find(u => u.id === targetUserId);
-        const userName = targetUser ? targetUser.name : 'Teacher';
-
-        document.getElementById('docTitleInput').value = `Official General Transfer Order - ${userName}`;
-        document.getElementById('docCategorySelect').value = 'Transfer Order';
-        document.getElementById('docReferenceNumber').value = `No. E-${Math.floor(20000 + Math.random() * 80000)}/TTMS/2026/${Math.floor(1000 + Math.random() * 9000)}`;
-        document.getElementById('docRemarksInput').value = 'Approved by Director of Elementary Education, Assam. Report within 7 days.';
-
-        pendingUploadedFile = {
-          isOfficialAutoGenerated: true,
-          name: `Transfer_Order_${targetUser ? targetUser.appNumber.replace(/[^a-zA-Z0-9]/g, '_') : 'Order'}.pdf`,
-          size: '348 KB'
-        };
-        selectedFileName.innerHTML = `<strong>Prepared:</strong> Official Assam Govt Signed PDF (${userName})`;
-        showToast('Official Assam Government sealed PDF template prepared for upload!', 'success');
-      });
-    }
-
     // Admin Upload Document Form Submit
     const adminUploadDocForm = document.getElementById('adminUploadDocForm');
     if (adminUploadDocForm) {
@@ -1653,6 +1946,11 @@
         const targetUser = usersList.find(u => u.id === targetUserId);
         if (!targetUser) {
           showToast('Please select a valid teacher!', 'error');
+          return;
+        }
+
+        if (!pendingUploadedFile || !pendingUploadedFile.data) {
+          showToast('Please select or drop a valid document file to upload.', 'error');
           return;
         }
 
@@ -1670,7 +1968,9 @@
           title: title,
           category: category,
           refNumber: refNumber,
-          uploadedBy: 'Directorate of Elementary Education, Govt of Assam',
+          uploadedBy: getTeacherDepartment(targetUser) === 'SSA' 
+            ? 'Samagra Shiksha Assam (SSA), Govt of Assam' 
+            : 'Directorate of Elementary Education (DEE), Govt of Assam',
           uploadedAt: `${getTodayDateString()} 15:45 IST`,
           fileSize: pendingUploadedFile ? pendingUploadedFile.size : '345 KB',
           fileName: pendingUploadedFile ? pendingUploadedFile.name : `${title.replace(/\s+/g, '_')}.pdf`,
@@ -1696,6 +1996,10 @@
 
         showToast(`Document successfully uploaded for ${targetUser.name}! Download is now active on teacher's dashboard.`, 'success');
         renderAdminDashboard();
+
+        if ((isAdminPreview && previewingTeacherId === targetUser.id) || (currentSession && (currentSession.id === targetUser.id || currentSession.username === targetUser.username))) {
+          renderTeacherDashboard();
+        }
       });
     }
 
@@ -1741,6 +2045,46 @@
 
     // School & Service
     document.getElementById('editTeacherDesignation').value = user.designation || 'Assistant Teacher of LPS';
+    
+    // Category & Department (SSA for Contractual, DEE for all rest)
+    const editCatSelect = document.getElementById('editTeacherCategoryType');
+    const deptNoteText = document.getElementById('editCategoryDeptNoteText');
+    const deptBadge = document.getElementById('editCategoryDeptBadge');
+    const noteBox = document.getElementById('editCategoryDeptNoteBox');
+
+    const updateEditDeptNote = (selectedVal) => {
+      const isSSA = selectedVal === 'Contractual';
+      if (deptNoteText) {
+        deptNoteText.textContent = isSSA 
+          ? 'SSA (Samagra Shiksha Assam) • Directorate Approval: SSA Sanction Committee' 
+          : 'DEE (Directorate of Elementary Education) • Directorate Approval: DEE Sanction Committee';
+      }
+      if (deptBadge) {
+        deptBadge.className = `dept-badge ${isSSA ? 'dept-badge-ssa' : 'dept-badge-dee'}`;
+        deptBadge.textContent = isSSA ? 'SSA' : 'DEE';
+      }
+      if (noteBox) {
+        noteBox.style.background = isSSA ? '#fef3c7' : '#e0f2fe';
+        noteBox.style.borderLeftColor = isSSA ? '#d97706' : '#0284c7';
+        noteBox.style.color = isSSA ? '#92400e' : '#0369a1';
+      }
+    };
+
+    if (editCatSelect) {
+      const dept = getTeacherDepartment(user);
+      let catVal = 'Regular';
+      if (dept === 'SSA' || (user.teacherCategory && user.teacherCategory.toLowerCase().includes('contract'))) {
+        catVal = 'Contractual';
+      } else if (user.teacherCategory && user.teacherCategory.includes('SRD')) {
+        catVal = 'SRD';
+      } else if (user.teacherCategory && user.teacherCategory.includes('Provincial')) {
+        catVal = 'Provincialised';
+      }
+      editCatSelect.value = catVal;
+      updateEditDeptNote(catVal);
+      editCatSelect.onchange = () => updateEditDeptNote(editCatSelect.value);
+    }
+
     document.getElementById('editTeacherSchool').value = user.school || '';
     document.getElementById('editTeacherUdise').value = user.udise || '18050214801';
     document.getElementById('editTeacherDistrict').value = user.district || 'Barpeta';
@@ -1853,21 +2197,22 @@
       const card = document.createElement('div');
       card.className = 'home-applicant-card';
 
-      let statusBadgeClass = 'status-pending';
-      if (user.status === 'Approved') statusBadgeClass = 'status-approved';
-      else if (user.status === 'Rejected') statusBadgeClass = 'status-rejected';
-      else if (user.status && user.status.includes('Forward')) statusBadgeClass = 'status-forwarded';
+      const dept = getTeacherDepartment(user);
+      const sm = getStatusMeta(user.status);
 
       card.innerHTML = `
         <div class="applicant-card-header">
           <div class="applicant-info-row">
             <div class="applicant-avatar">${user.name.charAt(0)}</div>
             <div class="applicant-names">
-              <strong>${user.name}</strong>
-              <small>${user.designation} • ${user.username}</small>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <strong>${escapeHtml(user.name)}</strong>
+                <span class="dept-badge dept-badge-sm ${dept === 'SSA' ? 'dept-badge-ssa' : 'dept-badge-dee'}">${dept}</span>
+              </div>
+              <small>${escapeHtml(user.designation)} • ${escapeHtml(user.username)}</small>
             </div>
           </div>
-          <span class="status-pill ${statusBadgeClass}">${user.status}</span>
+          <span class="status-pill ${sm.cls}"><span class="status-icon">${sm.icon}</span> ${escapeHtml(sm.label)}</span>
         </div>
 
         <div class="applicant-detail-grid">
@@ -2034,35 +2379,35 @@
 
     filtered.forEach(user => {
       const tr = document.createElement('tr');
-
-      let statusBadgeClass = 'status-pending';
-      if (user.status === 'Approved') statusBadgeClass = 'status-approved';
-      else if (user.status === 'Rejected') statusBadgeClass = 'status-rejected';
-      else if (user.status && user.status.includes('Forward')) statusBadgeClass = 'status-forwarded';
+      const dept = getTeacherDepartment(user);
+      const sm = getStatusMeta(user.status);
 
       tr.innerHTML = `
         <td>
           <div class="table-user-cell">
             <div class="table-user-avatar">${user.name.charAt(0)}</div>
             <div>
-              <strong>${user.name}</strong>
-              <small style="display:block; color:#64748b;">${user.empCode || user.username}</small>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <strong>${escapeHtml(user.name)}</strong>
+                <span class="dept-badge dept-badge-sm ${dept === 'SSA' ? 'dept-badge-ssa' : 'dept-badge-dee'}">${dept}</span>
+              </div>
+              <small style="display:block; color:#64748b;">${escapeHtml(user.empCode || user.username)} • ${escapeHtml(user.designation || '')}</small>
             </div>
           </div>
         </td>
         <td>
-          <strong>${user.appNumber}</strong>
-          <small style="display:block; color:#64748b;">${user.appType || 'Intra-district'}</small>
+          <strong>${escapeHtml(user.appNumber)}</strong>
+          <small style="display:block; color:#64748b;">${escapeHtml(user.appType || 'Intra-district')}</small>
         </td>
         <td>
-          <span>${user.school}</span>
-          <small style="display:block; color:#64748b;">${user.district} (${user.block || 'Chenga'})</small>
+          <span>${escapeHtml(user.school)}</span>
+          <small style="display:block; color:#64748b;">${escapeHtml(user.district)} (${escapeHtml(user.block || 'Chenga')})</small>
         </td>
         <td>
-          <span>${user.destinationSchool || (user.preferences && user.preferences[0]) || 'Dakshin Bartary LPS'}</span>
+          <span>${escapeHtml(user.destinationSchool || (user.preferences && user.preferences[0]) || 'Dakshin Bartary LPS')}</span>
         </td>
         <td>
-          <span class="status-pill ${statusBadgeClass}">${user.status}</span>
+          <span class="status-pill ${sm.cls}"><span class="status-icon">${sm.icon}</span> ${escapeHtml(sm.label)}</span>
         </td>
         <td>
           <span style="font-size:0.78rem; color:#1e293b;">${user.latestRemark || 'Under Review'}</span>
@@ -2140,34 +2485,35 @@
 
     filtered.forEach(user => {
       const tr = document.createElement('tr');
+      const dept = getTeacherDepartment(user);
       const docsCount = user.documents ? user.documents.length : 0;
 
-      let statusBadgeClass = 'status-pending';
-      if (user.status === 'Approved') statusBadgeClass = 'status-approved';
-      else if (user.status === 'Rejected') statusBadgeClass = 'status-rejected';
-      else if (user.status && user.status.includes('Forward')) statusBadgeClass = 'status-forwarded';
+      const sm = getStatusMeta(user.status);
 
       tr.innerHTML = `
         <td>
           <div class="table-user-cell">
             <div class="table-user-avatar">${user.name.charAt(0)}</div>
             <div>
-              <strong>${user.name}</strong>
-              <small style="display:block; color:#64748b;">${user.designation}</small>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <strong>${escapeHtml(user.name)}</strong>
+                <span class="dept-badge dept-badge-sm ${dept === 'SSA' ? 'dept-badge-ssa' : 'dept-badge-dee'}">${dept}</span>
+              </div>
+              <small style="display:block; color:#64748b;">${escapeHtml(user.designation)}</small>
             </div>
           </div>
         </td>
-        <td><strong>${user.username}</strong></td>
+        <td><strong>${escapeHtml(user.username)}</strong></td>
         <td>
-          <span style="font-family: monospace; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${user.password}</span>
+          <span style="font-family: monospace; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${escapeHtml(user.password)}</span>
         </td>
-        <td><small>${user.appNumber}</small></td>
+        <td><small>${escapeHtml(user.appNumber)}</small></td>
         <td>
-          <span>${user.school}</span>
-          <small style="display:block; color:#64748b;">${user.district}</small>
+          <span>${escapeHtml(user.school)}</span>
+          <small style="display:block; color:#64748b;">${escapeHtml(user.district)}</small>
         </td>
         <td>
-          <span class="status-pill ${statusBadgeClass}">${user.status}</span>
+          <span class="status-pill ${sm.cls}"><span class="status-icon">${sm.icon}</span> ${escapeHtml(sm.label)}</span>
         </td>
         <td>
           <span class="docs-count-badge">${docsCount} Doc${docsCount === 1 ? '' : 's'}</span>
@@ -2497,7 +2843,11 @@ Digitally Authenticated: Director of Elementary Education, Assam
 
       pdf.setFontSize(9);
       pdf.setTextColor(60, 60, 60);
-      pdf.text('DIRECTORATE OF ELEMENTARY EDUCATION, KAHILIPARA, GUWAHATI-19', 105, 35, { align: 'center' });
+      const dept = getTeacherDepartment(user);
+      const deptHeading = dept === 'SSA' 
+        ? 'SAMAGRA SHIKSHA ASSAM (SSA), STATE MISSION DIRECTORATE, GUWAHATI' 
+        : 'DIRECTORATE OF ELEMENTARY EDUCATION, KAHILIPARA, GUWAHATI-19';
+      pdf.text(deptHeading, 105, 35, { align: 'center' });
 
       // Horizontal separator line
       pdf.setDrawColor(14, 76, 100);

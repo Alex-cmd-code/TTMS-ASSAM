@@ -473,7 +473,7 @@
                 </svg>
               </div>
               <div class="banner-text-details">
-                <span class="banner-app-tag">GENERAL TRANSFER APPLICATION</span>
+                <span class="banner-app-tag" id="bannerAppTag">GENERAL TRANSFER APPLICATION • DEE</span>
                 <h1 class="banner-teacher-name" id="bannerTeacherName">MANJIT PATGIRI</h1>
                 <p class="banner-subline" id="bannerTeacherSubline">
                   Intra-district transfer • Assistant Teacher of LPS (SRD) • PACHIM BARTARY LPS
@@ -595,9 +595,20 @@
             </div>
           </div>
 
+          <!-- Application Workflow Pipeline Stepper -->
+          <div class="teacher-workflow-stepper-card" id="teacherWorkflowStepperCard">
+            <div class="stepper-title-row">
+              <span class="stepper-title">TRANSFER APPLICATION LIFECYCLE & APPROVAL PIPELINE</span>
+              <span class="stepper-stage-badge" id="stepperStageBadge">Stage 1 of 5</span>
+            </div>
+            <div class="teacher-workflow-stepper" id="teacherWorkflowStepper">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
           <!-- Alert Callout Box (Matching Image 1) -->
-          <div class="status-alert-box alert-info">
-            <div class="alert-icon-wrap">
+          <div class="status-alert-box alert-info" id="statusAlertBox">
+            <div class="alert-icon-wrap" id="alertIconWrap">
               <svg viewBox="0 0 24 24" fill="#0E4C64">
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
@@ -634,6 +645,14 @@
               <strong class="detail-value" id="detailTeacherName">MANJIT PATGIRI</strong>
             </div>
             <div class="detail-cell">
+              <span class="detail-label">Department</span>
+              <strong class="detail-value" id="detailDepartment"><span class="dept-badge dept-badge-dee"><span class="badge-dot"></span> DEE (Elementary Education)</span></strong>
+            </div>
+            <div class="detail-cell">
+              <span class="detail-label">Cadre / Teacher Category</span>
+              <strong class="detail-value" id="detailTeacherCategory">Regular Teacher (DEE)</strong>
+            </div>
+            <div class="detail-cell">
               <span class="detail-label">Employee Code / TET Roll</span>
               <strong class="detail-value" id="detailEmpCode">TET-2014-99812</strong>
             </div>
@@ -654,7 +673,7 @@
               <strong class="detail-value" id="detailDistrictBlock">Barpeta • Chenga Block</strong>
             </div>
             <div class="detail-cell">
-              <span class="detail-label">Gender & Category</span>
+              <span class="detail-label">Gender & Social Category</span>
               <strong class="detail-value" id="detailGenderCategory">Male • General</strong>
             </div>
             <div class="detail-cell">
@@ -1004,7 +1023,7 @@
                 </svg></span>
               <div class="hub-btn-text">
                 <strong>Upload & Issue PDF Order</strong>
-                <small>Upload signed order or auto-generate PDF</small>
+                <small>Upload official transfer order document</small>
               </div>
             </button>
             <button class="hub-action-btn info" id="hubViewPendingBtn">
@@ -1252,14 +1271,6 @@
                     <span id="selectedFileName">Click or Drag & Drop a PDF file here</span>
                     <small>Supports PDF, DOC, Images (Max 10MB)</small>
                   </div>
-                  <div class="or-separator"><span>OR</span></div>
-                  <button type="button" class="btn btn-outline-primary w-100" id="btnAutoGenerateGovtPdf">
-                    <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
-                      <path
-                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                    </svg>
-                    Auto-Generate Signed Assam Govt Official PDF
-                  </button>
                 </div>
               </div>
 
@@ -1495,20 +1506,36 @@
               placeholder="e.g. Assistant Teacher of LPS">
           </div>
           <div class="form-group col-half">
-            <label for="newTeacherSchool">Current School Name *</label>
-            <input type="text" id="newTeacherSchool" class="form-control" placeholder="e.g. RANGIA LPS" required>
+            <label for="newTeacherCategoryType">Teacher Category & Department *</label>
+            <select id="newTeacherCategoryType" class="form-control">
+              <option value="Regular" selected>Regular / Permanent Teacher (DEE)</option>
+              <option value="Contractual">Contractual Teacher (SSA)</option>
+              <option value="SRD">Special Regular Drive - SRD (DEE)</option>
+              <option value="Provincialised">Provincialised Teacher (DEE)</option>
+            </select>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group col-half">
+            <label for="newTeacherSchool">Current School Name *</label>
+            <input type="text" id="newTeacherSchool" class="form-control" placeholder="e.g. RANGIA LPS" required>
+          </div>
+          <div class="form-group col-half">
             <label for="newTeacherDistrict">District</label>
             <input type="text" id="newTeacherDistrict" class="form-control" placeholder="e.g. Kamrup (Rural)"
               value="Barpeta">
           </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group col-half">
             <label for="newTeacherAppNumber">Application Number</label>
-            <input type="text" id="newTeacherAppNumber" class="form-control" placeholder="Auto-generated if blank">
+            <input type="text" id="newTeacherAppNumber" class="form-control" placeholder="e.g. Intra/EE-001-0013351">
+          </div>
+          <div class="form-group col-half">
+            <label for="newTeacherRemark">Initial Remark</label>
+            <input type="text" id="newTeacherRemark" class="form-control" value="Direct Forward to AA">
           </div>
         </div>
 
@@ -1521,10 +1548,6 @@
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
             </select>
-          </div>
-          <div class="form-group col-half">
-            <label for="newTeacherRemark">Initial Remark</label>
-            <input type="text" id="newTeacherRemark" class="form-control" value="Direct Forward to AA">
           </div>
         </div>
 
@@ -1629,17 +1652,37 @@
               <input type="text" id="editTeacherDesignation" class="form-control" required>
             </div>
             <div class="form-group col-half">
-              <label for="editTeacherSchool">Current School Name *</label>
-              <input type="text" id="editTeacherSchool" class="form-control" required>
+              <label for="editTeacherCategoryType">Teacher Category & Department *</label>
+              <select id="editTeacherCategoryType" class="form-control" required>
+                <option value="Regular">Regular / Permanent (DEE) - DEE Sanction Committee</option>
+                <option value="Contractual">Contractual Teacher (SSA) - SSA Sanction Committee</option>
+                <option value="SRD">Special Regular Drive / SRD (DEE) - DEE Sanction Committee</option>
+                <option value="Provincialised">Provincialised Teacher (DEE) - DEE Sanction Committee</option>
+              </select>
             </div>
           </div>
 
+          <div id="editCategoryDeptNoteBox" style="margin-bottom: 12px; padding: 10px 14px; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px; font-size: 0.78rem; color: #0369a1; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong>Department & Pipeline Routing:</strong>
+              <span id="editCategoryDeptNoteText" style="display:block; margin-top:2px;">DEE (Directorate of Elementary Education) • Directorate Approval: DEE Sanction Committee</span>
+            </div>
+            <span id="editCategoryDeptBadge" class="dept-badge dept-badge-dee">DEE</span>
+          </div>
+
           <div class="form-row">
+            <div class="form-group col-half">
+              <label for="editTeacherSchool">Current School Name *</label>
+              <input type="text" id="editTeacherSchool" class="form-control" required>
+            </div>
             <div class="form-group col-half">
               <label for="editTeacherUdise">School U-DISE Code *</label>
               <input type="text" id="editTeacherUdise" class="form-control" placeholder="11 digits (e.g. 18050214801)"
                 required>
             </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group col-half">
               <label for="editTeacherDistrict">District *</label>
               <select id="editTeacherDistrict" class="form-control" required>
@@ -1680,19 +1723,20 @@
                 <option value="Tamulpur">Tamulpur</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-row">
             <div class="form-group col-half">
               <label for="editTeacherBlock">Educational Block</label>
               <input type="text" id="editTeacherBlock" class="form-control" placeholder="e.g. Chenga Block">
             </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group col-half">
-              <label for="editTeacherDateOfJoining">Date of Joining & Service Length</label>
-              <div class="input-with-action">
-                <input type="text" id="editTeacherDateOfJoining" class="form-control" placeholder="e.g. 15-09-2014">
-                <input type="text" id="editTeacherServiceLength" class="form-control" placeholder="e.g. 11 Yrs 5 Mos">
-              </div>
+              <label for="editTeacherDateOfJoining">Date of Joining</label>
+              <input type="text" id="editTeacherDateOfJoining" class="form-control" placeholder="e.g. 15-09-2014">
+            </div>
+            <div class="form-group col-half">
+              <label for="editTeacherServiceLength">Service Length</label>
+              <input type="text" id="editTeacherServiceLength" class="form-control" placeholder="e.g. 11 Yrs 5 Mos">
             </div>
           </div>
         </div>
