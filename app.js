@@ -228,6 +228,213 @@
     return { cls: 'status-pending', icon: '⏳', label: s || 'Pending' };
   }
 
+  // ==========================================
+  // SUPABASE CONFIGURATION (Project: HRMS)
+  // Ref: bvewsblubmivxbtaybaq
+  // Tables: teachers, documents, officer_info, admin_users
+  // Storage: assam-live-assets
+  // ==========================================
+  const SUPABASE_CONFIG = {
+    url: 'https://bvewsblubmivxbtaybaq.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2ZXdzYmx1Ym1pdnhidGF5YmFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MzM4MjcsImV4cCI6MjExMDEwOTgyN30.9A85UHN0_GVMuodTF1NOILoM1RrO95vz___ppma1dM4',
+    projectName: 'HRMS',
+    projectRef: 'bvewsblubmivxbtaybaq',
+    storageBucket: 'assam-live-assets'
+  };
+
+  let supabaseClient = null;
+  function getSupabase() {
+    if (!supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log(`[Supabase] Active connection to project: ${SUPABASE_CONFIG.projectName} (${SUPABASE_CONFIG.projectRef})`);
+      } catch (err) {
+        console.warn('[Supabase] Failed to initialize client:', err);
+      }
+    }
+    return supabaseClient;
+  }
+
+  function mapDocFromSupabase(d) {
+    return {
+      id: d.id,
+      title: d.title || 'Document',
+      category: d.category || 'General',
+      refNumber: d.ref_number || '',
+      uploadedBy: d.uploaded_by || 'Government of Assam',
+      uploadedAt: d.uploaded_at || '',
+      fileSize: d.file_size || '340 KB',
+      fileName: d.file_name || 'Document.pdf',
+      fileData: d.file_data || null,
+      remarks: d.remarks || ''
+    };
+  }
+
+  function mapTeacherFromSupabase(row) {
+    let docs = [];
+    if (Array.isArray(row.documents)) {
+      docs = row.documents.map(mapDocFromSupabase);
+    }
+    return {
+      id: row.id,
+      username: row.username,
+      password: row.password,
+      name: row.name,
+      role: row.role || 'teacher',
+      department: row.department || 'DEE',
+      teacherCategory: row.teacher_category || 'Regular',
+      designation: row.designation || '',
+      school: row.school || '',
+      udise: row.udise || '',
+      district: row.district || '',
+      block: row.block || '',
+      appNumber: row.app_number || '',
+      appType: row.app_type || 'Intra-district transfer',
+      status: row.status || 'Pending',
+      submittedOn: row.submitted_on || '',
+      lastActionOn: row.last_action_on || '',
+      latestRemark: row.latest_remark || '',
+      alertTitle: row.alert_title || '',
+      alertDesc: row.alert_desc || '',
+      empCode: row.emp_code || '',
+      gender: row.gender || 'Male',
+      category: row.category || 'General',
+      dateOfJoining: row.date_of_joining || '',
+      serviceLength: row.service_length || '',
+      destinationSchool: row.destination_school || '',
+      preferences: Array.isArray(row.preferences) ? row.preferences : [],
+      transferReason: row.transfer_reason || '',
+      documents: docs
+    };
+  }
+
+  function mapTeacherToSupabase(u) {
+    return {
+      id: u.id,
+      username: u.username,
+      password: u.password,
+      name: u.name,
+      role: u.role || 'teacher',
+      department: getTeacherDepartment(u),
+      teacher_category: u.teacherCategory || 'Regular',
+      designation: u.designation || '',
+      school: u.school || '',
+      udise: u.udise || '',
+      district: u.district || '',
+      block: u.block || '',
+      app_number: u.appNumber || '',
+      app_type: u.appType || 'Intra-district transfer',
+      status: u.status || 'Pending',
+      submitted_on: u.submittedOn || '',
+      last_action_on: u.lastActionOn || '',
+      latest_remark: u.latestRemark || '',
+      alert_title: u.alertTitle || '',
+      alert_desc: u.alertDesc || '',
+      emp_code: u.empCode || '',
+      gender: u.gender || '',
+      category: u.category || '',
+      date_of_joining: u.dateOfJoining || '',
+      service_length: u.serviceLength || '',
+      destination_school: u.destinationSchool || '',
+      preferences: Array.isArray(u.preferences) ? u.preferences : [],
+      transfer_reason: u.transferReason || '',
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  function mapDocToSupabase(doc, userId) {
+    return {
+      id: doc.id,
+      user_id: userId,
+      title: doc.title,
+      category: doc.category || 'General',
+      ref_number: doc.refNumber || '',
+      uploaded_by: doc.uploadedBy || 'Government of Assam',
+      uploaded_at: doc.uploadedAt || '',
+      file_size: doc.fileSize || '340 KB',
+      file_name: doc.fileName || 'Document.pdf',
+      file_data: doc.fileData || null,
+      remarks: doc.remarks || ''
+    };
+  }
+
+  function updateSupabaseStatusPill(isConnected, isSyncing = false) {
+    const pill = document.getElementById('supabaseStatusPill');
+    if (!pill) return;
+    if (isSyncing) {
+      pill.className = 'supabase-status-pill syncing';
+      pill.innerHTML = '<span class="status-dot"></span> Supabase: Syncing...';
+    } else if (isConnected) {
+      pill.className = 'supabase-status-pill';
+      pill.innerHTML = '<span class="status-dot"></span> Supabase: HRMS (Live)';
+    } else {
+      pill.className = 'supabase-status-pill';
+      pill.innerHTML = '<span class="status-dot"></span> Supabase: HRMS';
+    }
+  }
+
+  let isFetchingSupabase = false;
+  async function syncUsersFromSupabase() {
+    const client = getSupabase();
+    if (!client || isFetchingSupabase) return;
+    try {
+      isFetchingSupabase = true;
+      updateSupabaseStatusPill(true, true);
+      const { data, error } = await client
+        .from('teachers')
+        .select('*, documents(*)');
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        usersList = data.map(mapTeacherFromSupabase);
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(usersList));
+        updateSupabaseStatusPill(true, false);
+
+        // Refresh views if rendered
+        const adminView = document.getElementById('viewAdminDashboard');
+        const teacherView = document.getElementById('viewTeacherDashboard');
+        if (adminView && adminView.classList.contains('active-view')) {
+          renderAdminDashboard();
+        } else if (teacherView && teacherView.classList.contains('active-view')) {
+          renderTeacherDashboard();
+        }
+      } else {
+        updateSupabaseStatusPill(true, false);
+      }
+    } catch (e) {
+      console.warn('[Supabase] Failed to sync users from Supabase:', e);
+      updateSupabaseStatusPill(false, false);
+    } finally {
+      isFetchingSupabase = false;
+    }
+  }
+
+  let syncDebounceTimer = null;
+  function syncUsersToSupabase() {
+    const client = getSupabase();
+    if (!client) return;
+
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = setTimeout(async () => {
+      try {
+        updateSupabaseStatusPill(true, true);
+        for (const user of usersList) {
+          const teacherPayload = mapTeacherToSupabase(user);
+          await client.from('teachers').upsert(teacherPayload, { onConflict: 'id' });
+          if (Array.isArray(user.documents)) {
+            for (const doc of user.documents) {
+              const docPayload = mapDocToSupabase(doc, user.id);
+              await client.from('documents').upsert(docPayload, { onConflict: 'id' });
+            }
+          }
+        }
+        updateSupabaseStatusPill(true, false);
+      } catch (err) {
+        console.warn('[Supabase] Error syncing to Supabase:', err);
+        updateSupabaseStatusPill(true, false);
+      }
+    }, 400);
+  }
+
   function loadUsers() {
     try {
       const data = localStorage.getItem(STORAGE_KEY_USERS);
@@ -265,6 +472,9 @@
       console.error('Error loading users:', e);
       usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
     }
+
+    // Seamless asynchronous sync from Supabase HRMS
+    syncUsersFromSupabase();
   }
 
   function saveUsers() {
@@ -273,6 +483,9 @@
     } catch (e) {
       console.error('Error saving users to localStorage:', e);
     }
+
+    // Cloud sync to Supabase HRMS database
+    syncUsersToSupabase();
   }
 
   function isTeacherLoggedIn() {
@@ -346,6 +559,9 @@
     if (officerInfo && officerInfo.name) {
       ADMIN_CREDENTIALS.name = officerInfo.name;
     }
+
+    // Cloud sync from Supabase HRMS
+    syncOfficerFromSupabase();
   }
 
   function saveOfficerInfo() {
@@ -355,6 +571,9 @@
     if (officerInfo && officerInfo.name) {
       ADMIN_CREDENTIALS.name = officerInfo.name;
     }
+
+    // Cloud sync to Supabase HRMS
+    syncOfficerToSupabase();
   }
 
   function updateOfficerDisplays() {
@@ -1980,6 +2199,41 @@
 
         targetUser.documents.unshift(newDoc);
 
+        // Upload physical file to Supabase Storage bucket (assam-live-assets) if available
+        if (pendingUploadedFile && pendingUploadedFile.data) {
+          const client = getSupabase();
+          if (client && client.storage) {
+            try {
+              const byteCharacters = atob(pendingUploadedFile.data.split(',')[1]);
+              const byteNumbers = new Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: pendingUploadedFile.type || 'application/pdf' });
+              const cleanFileName = (pendingUploadedFile.name || 'doc.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+              const storagePath = `documents/${targetUser.id}/${Date.now()}_${cleanFileName}`;
+
+              client.storage
+                .from('assam-live-assets')
+                .upload(storagePath, blob, { contentType: blob.type, upsert: true })
+                .then(({ data, error }) => {
+                  if (!error && data) {
+                    const { data: pubData } = client.storage.from('assam-live-assets').getPublicUrl(storagePath);
+                    if (pubData && pubData.publicUrl) {
+                      newDoc.storageUrl = pubData.publicUrl;
+                      client.from('documents').update({ file_data: pubData.publicUrl }).eq('id', newDoc.id);
+                      console.log('[Supabase Storage] Uploaded to cloud storage:', pubData.publicUrl);
+                    }
+                  }
+                })
+                .catch(err => console.warn('[Supabase Storage Upload Error]', err));
+            } catch (e) {
+              console.warn('[Supabase Storage Data Conversion]', e);
+            }
+          }
+        }
+
         // Also optionally update teacher status if it's a transfer order
         if (category === 'Transfer Order' && targetUser.status === 'Pending') {
           targetUser.status = 'Approved';
@@ -2603,6 +2857,12 @@
         if (user && confirm(`Are you sure you want to delete teacher ${user.name} (${user.username})?`)) {
           usersList = usersList.filter(u => u.id !== userId);
           saveUsers();
+          const client = getSupabase();
+          if (client) {
+            client.from('teachers').delete().eq('id', userId).then(() => {
+              console.log(`[Supabase] Teacher ${userId} deleted from cloud.`);
+            }).catch(console.warn);
+          }
           showToast(`Teacher ${user.name} removed.`, 'info');
           renderAdminDashboard();
         }
@@ -2703,6 +2963,12 @@
         if (user && confirm('Delete this uploaded document?')) {
           user.documents = user.documents.filter(d => d.id !== dId);
           saveUsers();
+          const client = getSupabase();
+          if (client) {
+            client.from('documents').delete().eq('id', dId).then(() => {
+              console.log(`[Supabase] Document ${dId} deleted from cloud.`);
+            }).catch(console.warn);
+          }
           showToast('Document deleted.', 'info');
           renderAdminDashboard();
         }
@@ -3005,6 +3271,7 @@ Digitally Authenticated: Director of Elementary Education, Assam
     setupOfficerEvents();
     updateOfficerDisplays();
     generateCaptcha();
+    initSupabaseRealtime();
 
     // Start live clock
     updateLiveClock();
