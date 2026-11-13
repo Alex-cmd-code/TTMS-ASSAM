@@ -1,15 +1,13 @@
 {
-  "version": 2,
-  "builds": [
+  "cleanUrls": true,
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
+      "source": "/api/config",
+      "destination": "/api/config.js"
+    },
     {
-      "src": "/(.*)",
-      "dest": "server.js"
+      "source": "/((?!assets/|api/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
