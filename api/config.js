@@ -11,3 +11,4 @@ module.exports = (req, res) => {
     storageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'assam-live-assets'
   });
 };
+
