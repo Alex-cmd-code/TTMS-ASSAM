@@ -7,6 +7,7 @@
 CREATE TABLE IF NOT EXISTS public.teachers (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
+    mobile TEXT,
     password TEXT NOT NULL,
     name TEXT NOT NULL,
     role TEXT DEFAULT 'teacher',
@@ -49,6 +50,8 @@ CREATE TABLE IF NOT EXISTS public.documents (
     file_size TEXT,
     file_name TEXT,
     file_data TEXT,
+    storage_url TEXT,
+    file_type TEXT,
     remarks TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -70,14 +73,45 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
     password TEXT NOT NULL,
     name TEXT NOT NULL,
     role TEXT DEFAULT 'admin',
+    email TEXT,
+    last_login TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Row Level Security (RLS) Policies
+-- 5. Activity / Audit Logs Table
+CREATE TABLE IF NOT EXISTS public.activity_logs (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT,
+    actor_name TEXT,
+    actor_role TEXT,
+    action_type TEXT NOT NULL,
+    description TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. System Settings Table
+CREATE TABLE IF NOT EXISTS public.system_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    description TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Initial seed data for system settings
+INSERT INTO public.system_settings (key, value, description)
+VALUES 
+  ('portal_info', '{"title": "Teacher Transfer Management System (TTMS)", "state": "Assam", "portal_version": "2.4.0", "academic_year": "2026-2027", "helpline": "1800-345-3570", "email": "support.ttms@assam.gov.in"}'::jsonb, 'General portal configuration and metadata'),
+  ('transfer_window', '{"is_open": true, "phase": "Phase 2 - Scrutiny & Order Generation", "start_date": "2026-02-01", "end_date": "2026-03-31"}'::jsonb, 'Current transfer application window status')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- 7. Row Level Security (RLS) Policies
 ALTER TABLE public.teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.officer_info ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow all on teachers" ON public.teachers;
 CREATE POLICY "Allow all on teachers" ON public.teachers FOR ALL USING (true) WITH CHECK (true);
@@ -91,7 +125,22 @@ CREATE POLICY "Allow all on officer_info" ON public.officer_info FOR ALL USING (
 DROP POLICY IF EXISTS "Allow all on admin_users" ON public.admin_users;
 CREATE POLICY "Allow all on admin_users" ON public.admin_users FOR ALL USING (true) WITH CHECK (true);
 
--- 6. Supabase Storage Bucket for PDF & Asset Uploads
+DROP POLICY IF EXISTS "Allow all on activity_logs" ON public.activity_logs;
+CREATE POLICY "Allow all on activity_logs" ON public.activity_logs FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all on system_settings" ON public.system_settings;
+CREATE POLICY "Allow all on system_settings" ON public.system_settings FOR ALL USING (true) WITH CHECK (true);
+
+-- 8. High-Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_teachers_username ON public.teachers(username);
+CREATE INDEX IF NOT EXISTS idx_teachers_status ON public.teachers(status);
+CREATE INDEX IF NOT EXISTS idx_teachers_district ON public.teachers(district);
+CREATE INDEX IF NOT EXISTS idx_teachers_dept ON public.teachers(department);
+CREATE INDEX IF NOT EXISTS idx_documents_user_id ON public.documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_category ON public.documents(category);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created ON public.activity_logs(created_at DESC);
+
+-- 9. Supabase Storage Bucket for PDF & Asset Uploads
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'assam-live-assets', 
@@ -124,3 +173,31 @@ CREATE POLICY "Public Delete" ON storage.objects
   FOR DELETE 
   USING (bucket_id = 'assam-live-assets');
 
+-- 10. Enable Supabase Realtime
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.teachers;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.documents;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.officer_info;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.admin_users;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.activity_logs;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.system_settings;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
+END $$;

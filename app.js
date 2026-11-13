@@ -266,6 +266,7 @@
       fileSize: d.file_size || '340 KB',
       fileName: d.file_name || 'Document.pdf',
       fileData: d.file_data || null,
+      storageUrl: d.storage_url || (d.file_data && d.file_data.startsWith('http') ? d.file_data : null),
       remarks: d.remarks || ''
     };
   }
@@ -278,6 +279,7 @@
     return {
       id: row.id,
       username: row.username,
+      mobile: row.mobile || row.username,
       password: row.password,
       name: row.name,
       role: row.role || 'teacher',
@@ -312,6 +314,7 @@
     return {
       id: u.id,
       username: u.username,
+      mobile: u.mobile || u.username,
       password: u.password,
       name: u.name,
       role: u.role || 'teacher',
@@ -354,6 +357,8 @@
       file_size: doc.fileSize || '340 KB',
       file_name: doc.fileName || 'Document.pdf',
       file_data: doc.fileData || null,
+      storage_url: doc.storageUrl || (doc.fileData && doc.fileData.startsWith('http') ? doc.fileData : null),
+      file_type: 'application/pdf',
       remarks: doc.remarks || ''
     };
   }
@@ -433,6 +438,106 @@
         updateSupabaseStatusPill(true, false);
       }
     }, 400);
+  }
+
+  // Sync Officer Info from Supabase HRMS
+  async function syncOfficerFromSupabase() {
+    const client = getSupabase();
+    if (!client) return;
+    try {
+      const { data, error } = await client
+        .from('officer_info')
+        .select('*')
+        .eq('id', 'default')
+        .maybeSingle();
+
+      if (!error && data) {
+        officerInfo = {
+          name: data.name || DEFAULT_OFFICER.name,
+          designation: data.designation || DEFAULT_OFFICER.designation,
+          department: data.department || DEFAULT_OFFICER.department,
+          roleTag: data.role_tag || DEFAULT_OFFICER.roleTag
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(officerInfo));
+        } catch (e) { }
+        ADMIN_CREDENTIALS.name = officerInfo.name;
+        updateOfficerDisplays();
+      }
+    } catch (e) {
+      console.warn('[Supabase] Failed to sync officer info:', e);
+    }
+  }
+
+  // Sync Officer Info to Supabase HRMS
+  async function syncOfficerToSupabase() {
+    const client = getSupabase();
+    if (!client || !officerInfo) return;
+    try {
+      await client.from('officer_info').upsert({
+        id: 'default',
+        name: officerInfo.name,
+        designation: officerInfo.designation,
+        department: officerInfo.department,
+        role_tag: officerInfo.roleTag,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+      console.log('[Supabase] Officer info synced to cloud.');
+    } catch (err) {
+      console.warn('[Supabase] Error syncing officer info:', err);
+    }
+  }
+
+  // System & Activity Audit Logging in Supabase HRMS
+  async function logActivity(actionType, description, metadata = {}, targetUserId = null) {
+    const client = getSupabase();
+    if (!client) return;
+    try {
+      const actorName = (currentSession && currentSession.name) ? currentSession.name : (officerInfo ? officerInfo.name : 'State Nodal Officer');
+      const actorRole = (currentSession && currentSession.role) ? currentSession.role : 'admin';
+      await client.from('activity_logs').insert({
+        user_id: targetUserId || (currentSession ? currentSession.id : null),
+        actor_name: actorName,
+        actor_role: actorRole,
+        action_type: actionType,
+        description: description,
+        metadata: metadata,
+        created_at: new Date().toISOString()
+      });
+    } catch (err) {
+      console.warn('[Supabase] Activity log error:', err);
+    }
+  }
+
+  // Supabase Realtime Channel
+  let supabaseRealtimeChannel = null;
+  function initSupabaseRealtime() {
+    const client = getSupabase();
+    if (!client || supabaseRealtimeChannel) return;
+    try {
+      supabaseRealtimeChannel = client
+        .channel('hrms-live-sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'teachers' }, (payload) => {
+          console.log('[Supabase Realtime] Teachers table updated:', payload.eventType);
+          syncUsersFromSupabase();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, (payload) => {
+          console.log('[Supabase Realtime] Documents table updated:', payload.eventType);
+          syncUsersFromSupabase();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'officer_info' }, (payload) => {
+          console.log('[Supabase Realtime] Officer info updated:', payload.eventType);
+          syncOfficerFromSupabase();
+        })
+        .subscribe((status) => {
+          console.log(`[Supabase Realtime] Channel subscription status: ${status}`);
+          if (status === 'SUBSCRIBED') {
+            updateSupabaseStatusPill(true, false);
+          }
+        });
+    } catch (err) {
+      console.warn('[Supabase Realtime] Init error:', err);
+    }
   }
 
   function loadUsers() {
@@ -673,6 +778,7 @@
 
         saveOfficerInfo();
         updateOfficerDisplays();
+        logActivity('OFFICER_UPDATED', `State Approving Authority officer updated to "${newName}" (${officerInfo.designation})`);
 
         document.getElementById('changeOfficerModal').classList.remove('show');
         showToast(`State Officer successfully updated to: ${newName}`, 'success');
@@ -1001,18 +1107,52 @@
         }
 
         if (loginRole === 'admin') {
-          // Admin Check
-          if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-            saveSession({ ...ADMIN_CREDENTIALS });
-            saveAdminSession();
-            document.getElementById('loginModal').classList.remove('show');
-            showToast('Welcome, Administrator! Control console loaded.', 'success');
-            showView('viewAdminDashboard');
-            switchAdminTab('tabAdminHome');
-          } else {
-            showToast('Invalid Admin credentials. Try admin / admin123', 'error');
-            generateCaptcha();
-          }
+          // Admin Check with Supabase admin_users table & local fallback
+          (async () => {
+            let adminFound = null;
+            const client = getSupabase();
+            if (client) {
+              try {
+                const { data, error } = await client
+                  .from('admin_users')
+                  .select('*')
+                  .eq('username', username)
+                  .eq('password', password)
+                  .maybeSingle();
+
+                if (!error && data) {
+                  adminFound = {
+                    id: data.id,
+                    username: data.username,
+                    name: data.name || (officerInfo ? officerInfo.name : 'State Nodal Officer'),
+                    role: data.role || 'admin',
+                    email: data.email || 'admin.ttms@assam.gov.in'
+                  };
+                  client.from('admin_users').update({ last_login: new Date().toISOString() }).eq('id', data.id);
+                }
+              } catch (e) {
+                console.warn('[Supabase] Admin login lookup:', e);
+              }
+            }
+
+            if (!adminFound && username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+              adminFound = { ...ADMIN_CREDENTIALS };
+            }
+
+            if (adminFound) {
+              ADMIN_CREDENTIALS.name = adminFound.name;
+              saveSession(adminFound);
+              saveAdminSession();
+              logActivity('ADMIN_LOGIN', `Admin "${adminFound.name}" (${adminFound.username}) logged in.`);
+              document.getElementById('loginModal').classList.remove('show');
+              showToast('Welcome, Administrator! Control console loaded.', 'success');
+              showView('viewAdminDashboard');
+              switchAdminTab('tabAdminHome');
+            } else {
+              showToast('Invalid Admin credentials. Try admin / admin123', 'error');
+              generateCaptcha();
+            }
+          })();
         } else {
           // Teacher Check
           loadUsers();
@@ -1026,6 +1166,7 @@
             isAdminPreview = false;
             previewingTeacherId = null;
             saveSession(teacher);
+            logActivity('TEACHER_LOGIN', `Teacher "${teacher.name}" logged into portal.`, { teacherId: teacher.id }, teacher.id);
             document.getElementById('loginModal').classList.remove('show');
             showToast(`Welcome back, ${teacher.name}!`, 'success');
             showView('viewTeacherDashboard');
@@ -1890,6 +2031,7 @@
 
         usersList.push(newUser);
         saveUsers();
+        logActivity('TEACHER_REGISTERED', `New teacher "${newUser.name}" (${dept} - ${catType}) registered in portal.`, { teacherId: newUser.id, appNumber: newUser.appNumber }, newUser.id);
         addUserModal.classList.remove('show');
         addUserForm.reset();
         showToast(`Teacher "${newUser.name}" (${dept} - ${catType}) added successfully!`, 'success');
@@ -1998,6 +2140,7 @@
         user.alertDesc = alertDesc || (status === 'Approved' ? 'The competent authority has approved your transfer order.' : 'The request has been forwarded to the concerned authority for further verification.');
 
         saveUsers();
+        logActivity('TEACHER_UPDATED', `Teacher record for "${user.name}" updated. Status: ${user.status}.`, { teacherId: user.id, status: user.status }, user.id);
         editUserModal.classList.remove('show');
         showToast(`Updated record for "${user.name}" (${dept} - ${catType})!`, 'success');
 
@@ -2056,6 +2199,7 @@
           }
 
           saveUsers();
+          logActivity('STATUS_CHANGED', `Application status for teacher "${user.name}" updated to "${status}".`, { teacherId: user.id, status: status }, user.id);
           quickStatusModal.classList.remove('show');
           showToast(`Status updated to "${status}" for ${user.name}!`, 'success');
           renderAdminDashboard();
@@ -2096,6 +2240,7 @@
         if (user) {
           user.password = newPassword;
           saveUsers();
+          logActivity('PASSWORD_RESET', `Password reset for teacher "${user.name}".`, { teacherId: user.id }, user.id);
           resetPwdModal.classList.remove('show');
           showToast(`Password updated for ${user.name} to "${newPassword}"!`, 'success');
           renderAdminDashboard();
@@ -2244,6 +2389,7 @@
         }
 
         saveUsers();
+        logActivity('DOCUMENT_ISSUED', `Document "${title}" (${category}) issued for teacher "${targetUser.name}". Ref: ${refNum}`, { teacherId: targetUser.id, docId: newDoc.id, category: category }, targetUser.id);
         adminUploadDocForm.reset();
         pendingUploadedFile = null;
         selectedFileName.textContent = 'Click or Drag & Drop a PDF file here';
@@ -2857,6 +3003,7 @@
         if (user && confirm(`Are you sure you want to delete teacher ${user.name} (${user.username})?`)) {
           usersList = usersList.filter(u => u.id !== userId);
           saveUsers();
+          logActivity('TEACHER_DELETED', `Teacher "${user.name}" (${user.username}) removed from system.`, { teacherId: userId });
           const client = getSupabase();
           if (client) {
             client.from('teachers').delete().eq('id', userId).then(() => {
@@ -2961,8 +3108,10 @@
         const dId = btn.getAttribute('data-doc-id');
         const user = usersList.find(u => u.id === uId);
         if (user && confirm('Delete this uploaded document?')) {
+          const docToDelete = user.documents.find(d => d.id === dId);
           user.documents = user.documents.filter(d => d.id !== dId);
           saveUsers();
+          logActivity('DOCUMENT_DELETED', `Document "${docToDelete ? docToDelete.title : dId}" deleted.`, { teacherId: uId, docId: dId }, uId);
           const client = getSupabase();
           if (client) {
             client.from('documents').delete().eq('id', dId).then(() => {

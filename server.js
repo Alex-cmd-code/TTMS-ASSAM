@@ -74,6 +74,15 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`TTMS Assam Portal running at http://localhost:${PORT}`);
-});
+// Only start listening if run directly from CLI (e.g. node server.js)
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`TTMS Assam Portal running at http://localhost:${PORT}`);
+  });
+}
+
+// Export handler for serverless environments (e.g. Vercel)
+module.exports = (req, res) => {
+  server.emit('request', req, res);
+};
+module.exports.server = server;

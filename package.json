@@ -2,7 +2,6 @@
   "name": "ttms-assam",
   "version": "1.0.0",
   "description": "Teacher Transfer Management System - Government of Assam (HRMS Assam Replica)",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
