@@ -1073,9 +1073,9 @@
       if (found) return found;
     }
     if (!currentSession) return usersList[0];
-    const found = usersList.find(u => 
-      u.id === currentSession.id || 
-      u.username === currentSession.username || 
+    const found = usersList.find(u =>
+      u.id === currentSession.id ||
+      u.username === currentSession.username ||
       (currentSession.empCode && u.empCode === currentSession.empCode)
     );
     if (found) {
@@ -1968,8 +1968,8 @@
           title: title,
           category: category,
           refNumber: refNumber,
-          uploadedBy: getTeacherDepartment(targetUser) === 'SSA' 
-            ? 'Samagra Shiksha Assam (SSA), Govt of Assam' 
+          uploadedBy: getTeacherDepartment(targetUser) === 'SSA'
+            ? 'Samagra Shiksha Assam (SSA), Govt of Assam'
             : 'Directorate of Elementary Education (DEE), Govt of Assam',
           uploadedAt: `${getTodayDateString()} 15:45 IST`,
           fileSize: pendingUploadedFile ? pendingUploadedFile.size : '345 KB',
@@ -2045,7 +2045,7 @@
 
     // School & Service
     document.getElementById('editTeacherDesignation').value = user.designation || 'Assistant Teacher of LPS';
-    
+
     // Category & Department (SSA for Contractual, DEE for all rest)
     const editCatSelect = document.getElementById('editTeacherCategoryType');
     const deptNoteText = document.getElementById('editCategoryDeptNoteText');
@@ -2055,8 +2055,8 @@
     const updateEditDeptNote = (selectedVal) => {
       const isSSA = selectedVal === 'Contractual';
       if (deptNoteText) {
-        deptNoteText.textContent = isSSA 
-          ? 'SSA (Samagra Shiksha Assam) • Directorate Approval: SSA Sanction Committee' 
+        deptNoteText.textContent = isSSA
+          ? 'SSA (Samagra Shiksha Assam) • Directorate Approval: SSA Sanction Committee'
           : 'DEE (Directorate of Elementary Education) • Directorate Approval: DEE Sanction Committee';
       }
       if (deptBadge) {
@@ -2844,8 +2844,8 @@ Digitally Authenticated: Director of Elementary Education, Assam
       pdf.setFontSize(9);
       pdf.setTextColor(60, 60, 60);
       const dept = getTeacherDepartment(user);
-      const deptHeading = dept === 'SSA' 
-        ? 'SAMAGRA SHIKSHA ASSAM (SSA), STATE MISSION DIRECTORATE, GUWAHATI' 
+      const deptHeading = dept === 'SSA'
+        ? 'SAMAGRA SHIKSHA ASSAM (SSA), STATE MISSION DIRECTORATE, GUWAHATI'
         : 'DIRECTORATE OF ELEMENTARY EDUCATION, KAHILIPARA, GUWAHATI-19';
       pdf.text(deptHeading, 105, 35, { align: 'center' });
 
