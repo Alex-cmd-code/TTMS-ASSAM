@@ -14,6 +14,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/png" href="assets/emblem_logo.png">
+  <!-- Supabase Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- jsPDF for authentic government PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -41,6 +43,9 @@
         </svg> ttmscare@gmail.com</span>
     </div>
     <div class="helpline-right">
+      <span class="supabase-status-pill" id="supabaseStatusPill" title="Real-time cloud database configured with Supabase project HRMS">
+        <span class="status-dot"></span> Supabase: HRMS
+      </span>
       <span id="liveClockDisplay">Date: 23-10-2026, Time: 18:53:26 IST</span>
       <div class="portal-quick-actions">
         <button class="badge-action-btn" id="topNavAdminBtn">Admin Portal</button>
