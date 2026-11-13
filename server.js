@@ -34,7 +34,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// Step 3: Serve static files from workspace root
+// Explicit route for styles.css with strict MIME type
+app.get('/styles.css', (req, res) => {
+  res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  const filePath = path.join(__dirname, 'styles.css');
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('/* styles.css not found */');
+});
+
+// Explicit route for app.js with strict MIME type
+app.get('/app.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  const filePath = path.join(__dirname, 'app.js');
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('// app.js not found');
+});
+
+// Explicit route for static assets folder
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+// General static files from root
 app.use(express.static(__dirname));
 
 // Home route
@@ -44,6 +69,7 @@ app.get('/', (req, res) => {
 
 // API Config Endpoint to safely expose Supabase public settings
 app.get('/api/config', (req, res) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || 'https://bvewsblubmivxbtaybaq.supabase.co',
@@ -55,12 +81,16 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// Fallback for single-page application navigation (Express v4 & v5 compatible)
-app.use((req, res) => {
+// Safe SPA Fallback: ONLY catch page navigations without file extensions
+app.use((req, res, next) => {
+  // Never send index.html for missing static files with extensions (.css, .js, .png, etc.)
+  if (req.path.includes('.')) {
+    return res.status(404).send('File not found');
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Step 1: Export the app for Vercel serverless runtime and listen locally
+// Export the app for Vercel serverless runtime and listen locally
 module.exports = app;
 
 if (require.main === module) {
