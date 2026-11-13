@@ -1,6 +1,8 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
 const path = require('path');
+const fs = require('fs');
+
+const app = express();
 
 // Auto-load environment variables from .env if present
 const envPath = path.join(__dirname, '.env');
@@ -23,114 +25,45 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const PORT = process.env.PORT || 3000;
-const PUBLIC_DIR = __dirname;
-
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.pdf': 'application/pdf',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-};
-
-const server = http.createServer((req, res) => {
-  // Normalize URL
-  let parsedUrl = req.url.split('?')[0];
-
-  // API Config Endpoint to expose public Supabase configuration safely
-  if (parsedUrl === '/api/config') {
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Access-Control-Allow-Origin': '*'
-    });
-    res.end(JSON.stringify({
-      supabaseUrl: process.env.SUPABASE_URL || 'https://bvewsblubmivxbtaybaq.supabase.co',
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2ZXdzYmx1Ym1pdnhidGF5YmFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MzM4MjcsImV4cCI6MjExMDEwOTgyN30.9A85UHN0_GVMuodTF1NOILoM1RrO95vz___ppma1dM4',
-      supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_gOHK06m4HiJrDIAHxtKajw_YpPEjhnR',
-      projectName: process.env.SUPABASE_PROJECT_NAME || 'HRMS',
-      projectRef: process.env.SUPABASE_PROJECT_ID || 'bvewsblubmivxbtaybaq',
-      storageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'assam-live-assets'
-    }));
-    return;
+// Security Middleware: Prevent access to .env files
+app.use((req, res, next) => {
+  const parsedPath = req.path.toLowerCase();
+  if (parsedPath.includes('.env') || parsedPath.includes('vercel recovery-codes')) {
+    return res.status(403).send('Access Denied');
   }
+  next();
+});
 
-  if (parsedUrl === '/' || parsedUrl === '') {
-    parsedUrl = '/index.html';
-  }
+// Step 3: Serve static files from workspace root
+app.use(express.static(__dirname));
 
-  const filePath = path.join(PUBLIC_DIR, decodeURIComponent(parsedUrl));
+// Home route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-  // Security check: ensure path is within PUBLIC_DIR
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    res.end('Access Denied');
-    return;
-  }
-
-  // Prevent serving .env directly to clients for security
-  const baseName = path.basename(filePath);
-  if (baseName === '.env' || baseName.startsWith('.env.')) {
-    res.writeHead(403, { 'Content-Type': 'text/plain' });
-    res.end('Access Denied');
-    return;
-  }
-
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      // Fallback to index.html for SPA if not an asset
-      const ext = path.extname(filePath);
-      if (!ext || ext === '.html') {
-        const indexPath = path.join(PUBLIC_DIR, 'index.html');
-        fs.readFile(indexPath, (indexErr, content) => {
-          if (indexErr) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Not Found');
-          } else {
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(content);
-          }
-        });
-        return;
-      }
-
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('File Not Found');
-      return;
-    }
-
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-    });
-
-    const readStream = fs.createReadStream(filePath);
-    readStream.pipe(res);
+// API Config Endpoint to safely expose Supabase public settings
+app.get('/api/config', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL || 'https://bvewsblubmivxbtaybaq.supabase.co',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2ZXdzYmx1Ym1pdnhidGF5YmFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MzM4MjcsImV4cCI6MjExMDEwOTgyN30.9A85UHN0_GVMuodTF1NOILoM1RrO95vz___ppma1dM4',
+    supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_gOHK06m4HiJrDIAHxtKajw_YpPEjhnR',
+    projectName: process.env.SUPABASE_PROJECT_NAME || 'HRMS',
+    projectRef: process.env.SUPABASE_PROJECT_ID || 'bvewsblubmivxbtaybaq',
+    storageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'assam-live-assets'
   });
 });
 
-// Only start listening if run directly from CLI (e.g. node server.js)
-if (require.main === module) {
-  server.listen(PORT, () => {
-    console.log(`TTMS Assam Portal running at http://localhost:${PORT}`);
-  });
-}
+// Fallback for single-page application navigation (Express v4 & v5 compatible)
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-// Export handler for serverless environments (e.g. Vercel)
-module.exports = (req, res) => {
-  server.emit('request', req, res);
-};
-module.exports.server = server;
+// Step 1: Export the app for Vercel serverless runtime and listen locally
+module.exports = app;
+
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Running locally on http://localhost:${PORT}`));
+}

@@ -7,9 +7,15 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.1",
+    "express": "^5.3.0"
   },
-  "keywords": ["assam", "ttms", "hrms", "teacher-transfer"],
+  "keywords": [
+    "assam",
+    "ttms",
+    "hrms",
+    "teacher-transfer"
+  ],
   "author": "Antigravity",
   "license": "MIT"
 }
