@@ -1,37 +1,9 @@
-const https = require('https');
+-- ==============================================================================
+-- Teacher Transfer Management System (TTMS) / HRMS Assam - Supabase Schema
+-- Project: HRMS (Ref: bvewsblubmivxbtaybaq)
+-- ==============================================================================
 
-const token = 'sbp_oauth_642a5804e97c0ce5454f0384a5faa002bf9dd4f1';
-const ref = 'bvewsblubmivxbtaybaq';
-
-function runSql(sql) {
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.supabase.com',
-      path: '/v1/projects/' + ref + '/database/query',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      }
-    }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          resolve({ status: res.statusCode, body: JSON.parse(data) });
-        } catch (e) {
-          resolve({ status: res.statusCode, raw: data });
-        }
-      });
-    });
-    req.on('error', reject);
-    req.write(JSON.stringify({ query: sql }));
-    req.end();
-  });
-}
-
-const migrationSql = `
--- 1. Create teachers table
+-- 1. Teachers Table
 CREATE TABLE IF NOT EXISTS public.teachers (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
@@ -65,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.teachers (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Create documents table
+-- 2. Documents Table
 CREATE TABLE IF NOT EXISTS public.documents (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES public.teachers(id) ON DELETE CASCADE,
@@ -81,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.documents (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Create officer_info table
+-- 3. Officer Info Table
 CREATE TABLE IF NOT EXISTS public.officer_info (
     id TEXT PRIMARY KEY DEFAULT 'default',
     name TEXT NOT NULL,
@@ -91,7 +63,7 @@ CREATE TABLE IF NOT EXISTS public.officer_info (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Create admin_users table
+-- 4. Admin Credentials Table
 CREATE TABLE IF NOT EXISTS public.admin_users (
     id TEXT PRIMARY KEY DEFAULT 'admin_default',
     username TEXT UNIQUE NOT NULL,
@@ -101,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Enable RLS and setup permissive policies for anon/authenticated
+-- 5. Row Level Security (RLS) Policies
 ALTER TABLE public.teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.officer_info ENABLE ROW LEVEL SECURITY;
@@ -119,7 +91,7 @@ CREATE POLICY "Allow all on officer_info" ON public.officer_info FOR ALL USING (
 DROP POLICY IF EXISTS "Allow all on admin_users" ON public.admin_users;
 CREATE POLICY "Allow all on admin_users" ON public.admin_users FOR ALL USING (true) WITH CHECK (true);
 
--- 6. Storage bucket for asset uploads
+-- 6. Supabase Storage Bucket for PDF & Asset Uploads
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'assam-live-assets', 
@@ -130,7 +102,7 @@ VALUES (
 )
 ON CONFLICT (id) DO UPDATE SET public = true;
 
--- Storage policies
+-- Storage Policies
 DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 DROP POLICY IF EXISTS "Public Upload" ON storage.objects;
 DROP POLICY IF EXISTS "Public Update" ON storage.objects;
@@ -151,12 +123,4 @@ CREATE POLICY "Public Update" ON storage.objects
 CREATE POLICY "Public Delete" ON storage.objects 
   FOR DELETE 
   USING (bucket_id = 'assam-live-assets');
-`;
 
-async function main() {
-  console.log('Applying database migration to HRMS Supabase project (' + ref + ')...');
-  const res = await runSql(migrationSql);
-  console.log('Migration response:', res);
-}
-
-main().catch(console.error);
