@@ -135,8 +135,8 @@
   ];
 
   const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'admin123',
+    username: 'stateadmin',
+    password: 'Alex#2027',
     name: 'State Nodal Officer',
     role: 'admin'
   };
@@ -1135,8 +1135,8 @@
               }
             }
 
-            if (!adminFound && username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-              adminFound = { ...ADMIN_CREDENTIALS };
+            if (!adminFound && (username === ADMIN_CREDENTIALS.username || username === 'admin') && (password === ADMIN_CREDENTIALS.password || password === 'Alex#2027')) {
+              adminFound = { ...ADMIN_CREDENTIALS, username: username };
             }
 
             if (adminFound) {
@@ -1149,7 +1149,7 @@
               showView('viewAdminDashboard');
               switchAdminTab('tabAdminHome');
             } else {
-              showToast('Invalid Admin credentials. Try admin / admin123', 'error');
+              showToast('Invalid Admin credentials. Please check your username and password.', 'error');
               generateCaptcha();
             }
           })();
@@ -1343,9 +1343,13 @@
       }
     });
 
-    // Sidebar & Profile navigation clicks within Teacher Dashboard
+    // Sidebar Navigation within Teacher Dashboard
     const sideNavProfile = document.getElementById('sideNavProfile');
+    const sideNavDashboard = document.getElementById('sideNavDashboard');
+    const sideNavMutual = document.getElementById('sideNavMutual');
+    const sideNavGeneralStatus = document.getElementById('sideNavGeneralStatus');
     const menuMyProfileBtn = document.getElementById('menuMyProfileBtn');
+
     function scrollToTeacherProfile(e) {
       if (e) e.preventDefault();
       const secTeacher = document.getElementById('sectionTeacher');
@@ -1360,11 +1364,7 @@
       const menu = document.getElementById('userDropdownMenu');
       if (menu) menu.classList.remove('show');
     }
-    if (sideNavProfile) sideNavProfile.addEventListener('click', scrollToTeacherProfile);
-    if (menuMyProfileBtn) menuMyProfileBtn.addEventListener('click', scrollToTeacherProfile);
 
-    const sideNavDashboard = document.getElementById('sideNavDashboard');
-    const sideNavGeneralStatus = document.getElementById('sideNavGeneralStatus');
     function scrollToTeacherOverview(e) {
       if (e) e.preventDefault();
       const secOverview = document.getElementById('sectionOverview');
@@ -1379,7 +1379,27 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
-    if (sideNavDashboard) sideNavDashboard.addEventListener('click', scrollToTeacherOverview);
+
+    // Locked Tabs Handler (Restricted for Teachers)
+    function handleLockedTabClick(e, tabName) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      // If admin is previewing this portal, allow navigation
+      if (isAdminPreview) {
+        if (tabName === 'Profile' || tabName === 'Teacher Profile') scrollToTeacherProfile(e);
+        else if (tabName === 'Dashboard') scrollToTeacherOverview(e);
+        else showToast('Mutual Transfer module is in offline review by the State Directorate.', 'info');
+        return;
+      }
+      showToast(`Access Restricted: "${tabName}" is currently locked by the State Directorate during active transfer scrutiny.`, 'warning');
+    }
+
+    if (sideNavDashboard) sideNavDashboard.addEventListener('click', (e) => handleLockedTabClick(e, 'Dashboard'));
+    if (sideNavProfile) sideNavProfile.addEventListener('click', (e) => handleLockedTabClick(e, 'Profile'));
+    if (sideNavMutual) sideNavMutual.addEventListener('click', (e) => handleLockedTabClick(e, 'Mutual Transfer Request'));
+    if (menuMyProfileBtn) menuMyProfileBtn.addEventListener('click', (e) => handleLockedTabClick(e, 'Teacher Profile'));
     if (sideNavGeneralStatus) sideNavGeneralStatus.addEventListener('click', scrollToTeacherOverview);
 
     // Jump-to pills smooth scroll

@@ -78,6 +78,14 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Initial seed for admin credentials
+INSERT INTO public.admin_users (id, username, password, name, role, email)
+VALUES 
+  ('admin_default', 'stateadmin', 'Alex#2027', 'State Administrator', 'super_admin', 'stateadmin.hrms@assam.gov.in'),
+  ('admin_alias', 'admin', 'Alex#2027', 'Directorate Administrator', 'admin', 'admin.hrms@assam.gov.in')
+ON CONFLICT (id) DO UPDATE 
+SET username = EXCLUDED.username, password = EXCLUDED.password, updated_at = NOW();
+
 -- 5. Activity / Audit Logs Table
 CREATE TABLE IF NOT EXISTS public.activity_logs (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
