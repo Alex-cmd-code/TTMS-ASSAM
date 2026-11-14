@@ -2495,6 +2495,12 @@ body {
   gap: 12px;
 }
 
+.admin-officers-pills-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .admin-user-pill {
   font-size: 0.78rem;
   color: #e2e8f0;
@@ -2504,12 +2510,129 @@ body {
   background: rgba(255, 255, 255, 0.1);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.admin-user-pill:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .admin-user-pill svg {
   width: 14px;
   height: 14px;
   color: #facc15;
+}
+
+.officer-tag-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.officer-tag-badge.dee {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.officer-tag-badge.ssa {
+  background: #059669;
+  color: #ffffff;
+}
+
+/* Modal Officer Tabs & Panels */
+.officer-modal-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 16px 0;
+  gap: 8px;
+}
+
+.officer-modal-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.officer-modal-tab-btn:hover {
+  color: #1e293b;
+  background: #e2e8f0;
+}
+
+.officer-modal-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1 #cbd5e1 #ffffff;
+  font-weight: 700;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.officer-tab-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.officer-tab-pill.dee {
+  background: #0284c7;
+}
+
+.officer-tab-pill.ssa {
+  background: #059669;
+}
+
+.officer-panel-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.officer-panel-hint .hint-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.officer-panel-hint.dee-hint {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+}
+
+.officer-panel-hint.dee-hint .hint-icon {
+  color: #0284c7;
+}
+
+.officer-panel-hint.ssa-hint {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.officer-panel-hint.ssa-hint .hint-icon {
+  color: #16a34a;
 }
 
 .admin-container {
@@ -3687,7 +3810,7 @@ body {
 
 .admin-quick-hub-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
 }
 

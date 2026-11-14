@@ -143,13 +143,28 @@
 
   const STORAGE_KEY_ADMIN_SESSION = 'ttms_assam_admin_session_v2';
   const STORAGE_KEY_OFFICER = 'ttms_assam_officer_info_v2';
+  const STORAGE_KEY_OFFICERS_DUAL = 'ttms_assam_officers_dual_v2';
 
-  const DEFAULT_OFFICER = {
-    name: 'Dr. S. K. Sarma, ACS',
-    designation: 'Director of Elementary Education',
-    department: 'Government of Assam, Kahilipara, Guwahati-19',
-    roleTag: 'State Approving Authority (Directorate Level)'
+  const DEFAULT_OFFICERS = {
+    dee: {
+      id: 'dee',
+      departmentKey: 'DEE',
+      name: 'Dr. S. K. Sarma, ACS',
+      designation: 'Director of Elementary Education',
+      department: 'Directorate of Elementary Education, Kahilipara, Guwahati-19',
+      roleTag: 'State Approving Authority (DEE - Regular & Provincialised)'
+    },
+    ssa: {
+      id: 'ssa',
+      departmentKey: 'SSA',
+      name: 'Dr. Om Prakash, IAS',
+      designation: 'Mission Director, Samagra Shiksha Assam',
+      department: 'Axom Sarba Siksha Abhiyan Mission, Kahilipara, Guwahati-19',
+      roleTag: 'State Approving Authority (SSA - Contractual)'
+    }
   };
+
+  const DEFAULT_OFFICER = DEFAULT_OFFICERS.dee;
 
   // State in memory
   let usersList = [];
@@ -159,7 +174,11 @@
   let isAdminPreview = false;
   let previewingTeacherId = null;
   let currentWorkflowFilter = 'all';
-  let officerInfo = null;
+  let stateOfficers = {
+    dee: { ...DEFAULT_OFFICERS.dee },
+    ssa: { ...DEFAULT_OFFICERS.ssa }
+  };
+  let officerInfo = stateOfficers.dee;
 
   // ==========================================
   // 2. STORAGE & STRING UTILITIES
@@ -206,6 +225,23 @@
     if (des.includes('srd')) return 'Regular / SRD (DEE)';
     if (des.includes('provincial')) return 'Provincialised (DEE)';
     return 'Regular Teacher (DEE)';
+  }
+
+  /**
+   * Helper: Get State Officer by Department ('DEE' or 'SSA')
+   */
+  function getOfficerByDept(dept) {
+    if (!stateOfficers || !stateOfficers.dee) loadOfficerInfo();
+    if (String(dept).toUpperCase() === 'SSA') return stateOfficers.ssa;
+    return stateOfficers.dee;
+  }
+
+  /**
+   * Helper: Get State Officer applicable for a specific Teacher
+   */
+  function getOfficerForTeacher(user) {
+    const dept = getTeacherDepartment(user);
+    return getOfficerByDept(dept);
   }
 
   function getStatusMeta(status) {
@@ -440,28 +476,48 @@
     }, 400);
   }
 
-  // Sync Officer Info from Supabase HRMS
+  // Sync Officer Info from Supabase HRMS (Both DEE & SSA)
   async function syncOfficerFromSupabase() {
     const client = getSupabase();
     if (!client) return;
     try {
       const { data, error } = await client
         .from('officer_info')
-        .select('*')
-        .eq('id', 'default')
-        .maybeSingle();
+        .select('*');
 
-      if (!error && data) {
-        officerInfo = {
-          name: data.name || DEFAULT_OFFICER.name,
-          designation: data.designation || DEFAULT_OFFICER.designation,
-          department: data.department || DEFAULT_OFFICER.department,
-          roleTag: data.role_tag || DEFAULT_OFFICER.roleTag
-        };
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const deeRow = data.find(r => r.id === 'dee') || data.find(r => r.id === 'default');
+        const ssaRow = data.find(r => r.id === 'ssa');
+
+        if (deeRow) {
+          stateOfficers.dee = {
+            id: 'dee',
+            departmentKey: 'DEE',
+            name: deeRow.name || DEFAULT_OFFICERS.dee.name,
+            designation: deeRow.designation || DEFAULT_OFFICERS.dee.designation,
+            department: deeRow.department || DEFAULT_OFFICERS.dee.department,
+            roleTag: deeRow.role_tag || DEFAULT_OFFICERS.dee.roleTag
+          };
+        }
+
+        if (ssaRow) {
+          stateOfficers.ssa = {
+            id: 'ssa',
+            departmentKey: 'SSA',
+            name: ssaRow.name || DEFAULT_OFFICERS.ssa.name,
+            designation: ssaRow.designation || DEFAULT_OFFICERS.ssa.designation,
+            department: ssaRow.department || DEFAULT_OFFICERS.ssa.department,
+            roleTag: ssaRow.role_tag || DEFAULT_OFFICERS.ssa.roleTag
+          };
+        }
+
+        officerInfo = stateOfficers.dee;
         try {
+          localStorage.setItem(STORAGE_KEY_OFFICERS_DUAL, JSON.stringify(stateOfficers));
           localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(officerInfo));
         } catch (e) { }
-        ADMIN_CREDENTIALS.name = officerInfo.name;
+
+        ADMIN_CREDENTIALS.name = stateOfficers.dee.name;
         updateOfficerDisplays();
       }
     } catch (e) {
@@ -469,20 +525,38 @@
     }
   }
 
-  // Sync Officer Info to Supabase HRMS
+  // Sync Officer Info to Supabase HRMS (Both DEE & SSA)
   async function syncOfficerToSupabase() {
     const client = getSupabase();
-    if (!client || !officerInfo) return;
+    if (!client || !stateOfficers) return;
     try {
-      await client.from('officer_info').upsert({
-        id: 'default',
-        name: officerInfo.name,
-        designation: officerInfo.designation,
-        department: officerInfo.department,
-        role_tag: officerInfo.roleTag,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-      console.log('[Supabase] Officer info synced to cloud.');
+      await client.from('officer_info').upsert([
+        {
+          id: 'dee',
+          name: stateOfficers.dee.name,
+          designation: stateOfficers.dee.designation,
+          department: stateOfficers.dee.department,
+          role_tag: stateOfficers.dee.roleTag,
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'ssa',
+          name: stateOfficers.ssa.name,
+          designation: stateOfficers.ssa.designation,
+          department: stateOfficers.ssa.department,
+          role_tag: stateOfficers.ssa.roleTag,
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'default',
+          name: stateOfficers.dee.name,
+          designation: stateOfficers.dee.designation,
+          department: stateOfficers.dee.department,
+          role_tag: stateOfficers.dee.roleTag,
+          updated_at: new Date().toISOString()
+        }
+      ], { onConflict: 'id' });
+      console.log('[Supabase] Both DEE & SSA State Officers synced to cloud.');
     } catch (err) {
       console.warn('[Supabase] Error syncing officer info:', err);
     }
@@ -651,16 +725,34 @@
 
   function loadOfficerInfo() {
     try {
-      const data = localStorage.getItem(STORAGE_KEY_OFFICER);
-      if (data) {
-        officerInfo = JSON.parse(data);
+      const dualData = localStorage.getItem(STORAGE_KEY_OFFICERS_DUAL);
+      if (dualData) {
+        stateOfficers = JSON.parse(dualData);
+        if (!stateOfficers.dee) stateOfficers.dee = { ...DEFAULT_OFFICERS.dee };
+        if (!stateOfficers.ssa) stateOfficers.ssa = { ...DEFAULT_OFFICERS.ssa };
       } else {
-        officerInfo = { ...DEFAULT_OFFICER };
+        const legacyData = localStorage.getItem(STORAGE_KEY_OFFICER);
+        if (legacyData) {
+          const parsed = JSON.parse(legacyData);
+          stateOfficers = {
+            dee: { ...DEFAULT_OFFICERS.dee, ...parsed },
+            ssa: { ...DEFAULT_OFFICERS.ssa }
+          };
+        } else {
+          stateOfficers = {
+            dee: { ...DEFAULT_OFFICERS.dee },
+            ssa: { ...DEFAULT_OFFICERS.ssa }
+          };
+        }
         saveOfficerInfo();
       }
     } catch (e) {
-      officerInfo = { ...DEFAULT_OFFICER };
+      stateOfficers = {
+        dee: { ...DEFAULT_OFFICERS.dee },
+        ssa: { ...DEFAULT_OFFICERS.ssa }
+      };
     }
+    officerInfo = stateOfficers.dee;
     if (officerInfo && officerInfo.name) {
       ADMIN_CREDENTIALS.name = officerInfo.name;
     }
@@ -671,8 +763,10 @@
 
   function saveOfficerInfo() {
     try {
-      localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(officerInfo));
+      localStorage.setItem(STORAGE_KEY_OFFICERS_DUAL, JSON.stringify(stateOfficers));
+      localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(stateOfficers.dee));
     } catch (e) { }
+    officerInfo = stateOfficers.dee;
     if (officerInfo && officerInfo.name) {
       ADMIN_CREDENTIALS.name = officerInfo.name;
     }
@@ -681,70 +775,161 @@
     syncOfficerToSupabase();
   }
 
-  function updateOfficerDisplays() {
-    if (!officerInfo) loadOfficerInfo();
+  function updateOfficerDisplays(targetUser = null) {
+    if (!stateOfficers || !stateOfficers.dee) loadOfficerInfo();
 
-    // 1. Admin Header Pill
-    const displayEl = document.getElementById('adminOfficerNameDisplay');
-    if (displayEl) {
-      displayEl.textContent = `${officerInfo.name} (${officerInfo.designation})`;
+    // 1. Admin Header Pills (Both DEE & SSA)
+    const elDEE = document.getElementById('adminOfficerDEEDisplay');
+    if (elDEE) {
+      elDEE.textContent = `${stateOfficers.dee.name} (Director)`;
+    }
+    const elSSA = document.getElementById('adminOfficerSSADisplay');
+    if (elSSA) {
+      elSSA.textContent = `${stateOfficers.ssa.name} (Mission Director)`;
+    }
+    const legacyHeader = document.getElementById('adminOfficerNameDisplay');
+    if (legacyHeader) {
+      legacyHeader.textContent = `DEE: ${stateOfficers.dee.name} | SSA: ${stateOfficers.ssa.name}`;
     }
 
-    // 2. Admin Home Banner Chip
+    // 2. Admin Home Banner Chips (Both DEE & SSA)
+    const chipDEE = document.getElementById('bannerOfficerNameDEE');
+    if (chipDEE) {
+      chipDEE.textContent = stateOfficers.dee.name;
+    }
+    const chipSSA = document.getElementById('bannerOfficerNameSSA');
+    if (chipSSA) {
+      chipSSA.textContent = stateOfficers.ssa.name;
+    }
     const bannerOfficerChip = document.getElementById('bannerOfficerName');
     if (bannerOfficerChip) {
-      bannerOfficerChip.textContent = officerInfo.name;
+      bannerOfficerChip.textContent = `${stateOfficers.dee.name} & ${stateOfficers.ssa.name}`;
     }
 
-    // 3. Quick Hub Button subtitle
-    const hubPreview = document.getElementById('hubOfficerNamePreview');
-    if (hubPreview) {
-      hubPreview.textContent = `${officerInfo.name} (${officerInfo.designation})`;
+    // 3. Quick Hub Button Subtitles (Both DEE & SSA)
+    const hubDEE = document.getElementById('hubOfficerDEEPreview');
+    if (hubDEE) {
+      hubDEE.textContent = `${stateOfficers.dee.name} (Director)`;
+    }
+    const hubSSA = document.getElementById('hubOfficerSSAPreview');
+    if (hubSSA) {
+      hubSSA.textContent = `${stateOfficers.ssa.name} (Mission Director)`;
+    }
+    const legacyHub = document.getElementById('hubOfficerNamePreview');
+    if (legacyHub) {
+      legacyHub.textContent = `DEE: ${stateOfficers.dee.name} • SSA: ${stateOfficers.ssa.name}`;
     }
 
-    // 4. Modal Paper Preview Signatory
+    // 4. Modal Paper Preview Signatory (Department specific for teacher)
+    const activeTeacher = targetUser || activePreviewUser;
+    const teacherDept = getTeacherDepartment(activeTeacher);
+    const applicableOfficer = (teacherDept === 'SSA') ? stateOfficers.ssa : stateOfficers.dee;
+
+    const previewStamp = document.getElementById('previewStampBy');
+    if (previewStamp) {
+      previewStamp.textContent = applicableOfficer.designation;
+    }
     const previewSignatory = document.getElementById('previewSignatoryName');
     if (previewSignatory) {
-      previewSignatory.textContent = `(${officerInfo.name})`;
+      previewSignatory.textContent = `(${applicableOfficer.name})`;
     }
     const previewPost = document.getElementById('previewSignatoryPost');
     if (previewPost) {
-      previewPost.textContent = officerInfo.designation;
+      previewPost.textContent = applicableOfficer.designation;
     }
     const previewOffice = document.getElementById('previewSignatoryOffice');
     if (previewOffice) {
-      previewOffice.textContent = officerInfo.department;
+      previewOffice.textContent = applicableOfficer.department;
     }
   }
 
-  function openChangeOfficerModal() {
-    if (!officerInfo) loadOfficerInfo();
+  let activeOfficerModalDept = 'dee';
+
+  function openChangeOfficerModal(targetDept = 'dee') {
+    if (!stateOfficers || !stateOfficers.dee) loadOfficerInfo();
     const modal = document.getElementById('changeOfficerModal');
     if (!modal) return;
 
-    document.getElementById('inputOfficerName').value = officerInfo.name || '';
-    document.getElementById('inputOfficerDesignation').value = officerInfo.designation || '';
-    document.getElementById('inputOfficerDepartment').value = officerInfo.department || '';
-    document.getElementById('inputOfficerRoleTag').value = officerInfo.roleTag || '';
+    activeOfficerModalDept = (targetDept === 'ssa') ? 'ssa' : 'dee';
+
+    // Populate DEE fields
+    const nameDEE = document.getElementById('inputOfficerNameDEE');
+    if (nameDEE) nameDEE.value = stateOfficers.dee.name || '';
+    const desDEE = document.getElementById('inputOfficerDesignationDEE');
+    if (desDEE) desDEE.value = stateOfficers.dee.designation || '';
+    const deptDEE = document.getElementById('inputOfficerDepartmentDEE');
+    if (deptDEE) deptDEE.value = stateOfficers.dee.department || '';
+    const roleDEE = document.getElementById('inputOfficerRoleTagDEE');
+    if (roleDEE) roleDEE.value = stateOfficers.dee.roleTag || '';
+
+    // Populate SSA fields
+    const nameSSA = document.getElementById('inputOfficerNameSSA');
+    if (nameSSA) nameSSA.value = stateOfficers.ssa.name || '';
+    const desSSA = document.getElementById('inputOfficerDesignationSSA');
+    if (desSSA) desSSA.value = stateOfficers.ssa.designation || '';
+    const deptSSA = document.getElementById('inputOfficerDepartmentSSA');
+    if (deptSSA) deptSSA.value = stateOfficers.ssa.department || '';
+    const roleSSA = document.getElementById('inputOfficerRoleTagSSA');
+    if (roleSSA) roleSSA.value = stateOfficers.ssa.roleTag || '';
+
+    // Switch to target tab
+    switchOfficerModalTab(activeOfficerModalDept);
 
     modal.classList.add('show');
+  }
+
+  function switchOfficerModalTab(dept) {
+    activeOfficerModalDept = dept;
+    const tabDEE = document.getElementById('modalTabDEE');
+    const tabSSA = document.getElementById('modalTabSSA');
+    const panelDEE = document.getElementById('panelOfficerDEE');
+    const panelSSA = document.getElementById('panelOfficerSSA');
+
+    if (dept === 'ssa') {
+      if (tabDEE) tabDEE.classList.remove('active');
+      if (tabSSA) tabSSA.classList.add('active');
+      if (panelDEE) { panelDEE.classList.remove('active'); panelDEE.style.display = 'none'; }
+      if (panelSSA) { panelSSA.classList.add('active'); panelSSA.style.display = 'block'; }
+    } else {
+      if (tabSSA) tabSSA.classList.remove('active');
+      if (tabDEE) tabDEE.classList.add('active');
+      if (panelSSA) { panelSSA.classList.remove('active'); panelSSA.style.display = 'none'; }
+      if (panelDEE) { panelDEE.classList.add('active'); panelDEE.style.display = 'block'; }
+    }
   }
 
   function setupOfficerEvents() {
     // Header button
     const btnHeader = document.getElementById('btnChangeOfficerName');
-    if (btnHeader) btnHeader.addEventListener('click', openChangeOfficerModal);
+    if (btnHeader) btnHeader.addEventListener('click', () => openChangeOfficerModal('dee'));
 
-    // Pill clickable
-    const pill = document.getElementById('adminOfficerPill');
-    if (pill) {
-      pill.style.cursor = 'pointer';
-      pill.addEventListener('click', openChangeOfficerModal);
-    }
+    // Header pills (Both DEE & SSA)
+    const pillDEE = document.getElementById('adminOfficerPillDEE');
+    if (pillDEE) pillDEE.addEventListener('click', () => openChangeOfficerModal('dee'));
 
-    // Quick Hub button in Admin Home
-    const hubBtn = document.getElementById('hubChangeOfficerBtn');
-    if (hubBtn) hubBtn.addEventListener('click', openChangeOfficerModal);
+    const pillSSA = document.getElementById('adminOfficerPillSSA');
+    if (pillSSA) pillSSA.addEventListener('click', () => openChangeOfficerModal('ssa'));
+
+    // Legacy pill fallback
+    const pillLegacy = document.getElementById('adminOfficerPill');
+    if (pillLegacy) pillLegacy.addEventListener('click', () => openChangeOfficerModal('dee'));
+
+    // Quick Hub buttons in Admin Home
+    const hubDEE = document.getElementById('hubChangeOfficerDEEBtn');
+    if (hubDEE) hubDEE.addEventListener('click', () => openChangeOfficerModal('dee'));
+
+    const hubSSA = document.getElementById('hubChangeOfficerSSABtn');
+    if (hubSSA) hubSSA.addEventListener('click', () => openChangeOfficerModal('ssa'));
+
+    const hubLegacy = document.getElementById('hubChangeOfficerBtn');
+    if (hubLegacy) hubLegacy.addEventListener('click', () => openChangeOfficerModal('dee'));
+
+    // Modal internal tab switcher buttons
+    const tabBtnDEE = document.getElementById('modalTabDEE');
+    if (tabBtnDEE) tabBtnDEE.addEventListener('click', () => switchOfficerModalTab('dee'));
+
+    const tabBtnSSA = document.getElementById('modalTabSSA');
+    if (tabBtnSSA) tabBtnSSA.addEventListener('click', () => switchOfficerModalTab('ssa'));
 
     // Modal close & cancel
     const closeBtn = document.getElementById('closeChangeOfficerModalBtn');
@@ -756,32 +941,51 @@
       document.getElementById('changeOfficerModal').classList.remove('show');
     });
 
-    // Modal submit
+    // Form submit
     const form = document.getElementById('changeOfficerForm');
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const newName = document.getElementById('inputOfficerName').value.trim();
-        const newDesignation = document.getElementById('inputOfficerDesignation').value.trim();
-        const newDepartment = document.getElementById('inputOfficerDepartment').value.trim();
-        const newRoleTag = document.getElementById('inputOfficerRoleTag').value.trim();
 
-        if (!newName) {
+        // Read DEE
+        const nameDEE = (document.getElementById('inputOfficerNameDEE')?.value || '').trim();
+        const desDEE = (document.getElementById('inputOfficerDesignationDEE')?.value || '').trim();
+        const deptDEE = (document.getElementById('inputOfficerDepartmentDEE')?.value || '').trim();
+        const roleDEE = (document.getElementById('inputOfficerRoleTagDEE')?.value || '').trim();
+
+        // Read SSA
+        const nameSSA = (document.getElementById('inputOfficerNameSSA')?.value || '').trim();
+        const desSSA = (document.getElementById('inputOfficerDesignationSSA')?.value || '').trim();
+        const deptSSA = (document.getElementById('inputOfficerDepartmentSSA')?.value || '').trim();
+        const roleSSA = (document.getElementById('inputOfficerRoleTagSSA')?.value || '').trim();
+
+        if (!nameDEE && !nameSSA) {
           showToast('Please enter the officer name.', 'error');
           return;
         }
 
-        officerInfo.name = newName;
-        officerInfo.designation = newDesignation || 'Director of Elementary Education';
-        officerInfo.department = newDepartment || 'Government of Assam, Kahilipara, Guwahati-19';
-        officerInfo.roleTag = newRoleTag || 'State Approving Authority';
+        if (nameDEE) {
+          stateOfficers.dee.name = nameDEE;
+          stateOfficers.dee.designation = desDEE || 'Director of Elementary Education';
+          stateOfficers.dee.department = deptDEE || 'Directorate of Elementary Education, Kahilipara, Guwahati-19';
+          stateOfficers.dee.roleTag = roleDEE || 'State Approving Authority (DEE - Regular & Provincialised)';
+        }
 
+        if (nameSSA) {
+          stateOfficers.ssa.name = nameSSA;
+          stateOfficers.ssa.designation = desSSA || 'Mission Director, Samagra Shiksha Assam';
+          stateOfficers.ssa.department = deptSSA || 'Axom Sarba Siksha Abhiyan Mission, Kahilipara, Guwahati-19';
+          stateOfficers.ssa.roleTag = roleSSA || 'State Approving Authority (SSA - Contractual)';
+        }
+
+        officerInfo = stateOfficers.dee;
         saveOfficerInfo();
         updateOfficerDisplays();
-        logActivity('OFFICER_UPDATED', `State Approving Authority officer updated to "${newName}" (${officerInfo.designation})`);
+
+        logActivity('OFFICERS_UPDATED', `State Approving Authorities updated - DEE: "${stateOfficers.dee.name}", SSA: "${stateOfficers.ssa.name}"`);
 
         document.getElementById('changeOfficerModal').classList.remove('show');
-        showToast(`State Officer successfully updated to: ${newName}`, 'success');
+        showToast(`State Officers updated: DEE (${stateOfficers.dee.name}) & SSA (${stateOfficers.ssa.name})`, 'success');
       });
     }
   }
@@ -3154,7 +3358,7 @@
   function previewDocument(doc, user) {
     activePreviewDoc = doc;
     activePreviewUser = user;
-    updateOfficerDisplays();
+    updateOfficerDisplays(user);
 
     const modal = document.getElementById('docPreviewModal');
     document.getElementById('previewDocTitle').textContent = doc.title;
@@ -3355,7 +3559,8 @@ Digitally Authenticated: Director of Elementary Education, Assam
       pdf.text('Terms and Conditions:', 20, termsY);
       pdf.text('1. The teacher should be relieved immediately by the competent authority to join the new post.', 20, termsY + 6);
       pdf.text('2. No Travelling Allowance (T.A.) or Daily Allowance (D.A.) is admissible under General Transfer rules.', 20, termsY + 12);
-      pdf.text('3. The District Elementary Education Officer (DEEO) shall update the Service Book accordingly.', 20, termsY + 18);
+      const updateAuthority = (dept === 'SSA') ? 'District Mission Coordinator (DMC) / SSA' : 'District Elementary Education Officer (DEEO)';
+      pdf.text(`3. The ${updateAuthority} shall update the Service Book accordingly.`, 20, termsY + 18);
       pdf.text('4. This is an electronically generated and verified order issued through hrmsassam.in.', 20, termsY + 24);
 
       // Remarks note
@@ -3368,7 +3573,7 @@ Digitally Authenticated: Director of Elementary Education, Assam
         pdf.text(`ADMINISTRATIVE REMARK: ${doc.remarks}`, 24, termsY + 37);
       }
 
-      // Digital Signature Box
+      // Digital Signature Box (Department Competent State Officer: DEE or SSA)
       let sigY = termsY + 54;
       pdf.setDrawColor(34, 197, 94);
       pdf.setFillColor(240, 253, 244);
@@ -3379,18 +3584,19 @@ Digitally Authenticated: Director of Elementary Education, Assam
       pdf.text('✓ DIGITALLY AUTHENTICATED', 24, sigY + 7);
       pdf.setFontSize(7.5);
       pdf.setTextColor(0, 0, 0);
-      if (!officerInfo) loadOfficerInfo();
-      pdf.text(officerInfo ? officerInfo.designation : 'Director of Elementary Education', 24, sigY + 13);
+
+      const signatoryOfficer = getOfficerForTeacher(user);
+      pdf.text(signatoryOfficer.designation, 24, sigY + 13);
       pdf.text('Govt of Assam (TTMS Portal)', 24, sigY + 19);
 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(9);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(`(${officerInfo ? officerInfo.name : 'Dr. S. K. Sarma, ACS'})`, 140, sigY + 8);
+      pdf.text(`(${signatoryOfficer.name})`, 140, sigY + 8);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
-      pdf.text(officerInfo ? officerInfo.designation : 'Director of Elementary Education', 140, sigY + 14);
-      pdf.text(officerInfo ? officerInfo.department : 'Government of Assam', 140, sigY + 19);
+      pdf.text(signatoryOfficer.designation, 140, sigY + 14);
+      pdf.text(signatoryOfficer.department, 140, sigY + 19);
 
       // Footer
       pdf.setFontSize(7.5);

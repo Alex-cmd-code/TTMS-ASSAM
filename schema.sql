@@ -66,6 +66,15 @@ CREATE TABLE IF NOT EXISTS public.officer_info (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Initial seed for state officers (DEE & SSA)
+INSERT INTO public.officer_info (id, name, designation, department, role_tag)
+VALUES 
+  ('dee', 'Dr. S. K. Sarma, ACS', 'Director of Elementary Education', 'Directorate of Elementary Education, Kahilipara, Guwahati-19', 'State Approving Authority (DEE - Regular & Provincialised)'),
+  ('ssa', 'Dr. Om Prakash, IAS', 'Mission Director, Samagra Shiksha Assam', 'Axom Sarba Siksha Abhiyan Mission, Kahilipara, Guwahati-19', 'State Approving Authority (SSA - Contractual)'),
+  ('default', 'Dr. S. K. Sarma, ACS', 'Director of Elementary Education', 'Directorate of Elementary Education, Kahilipara, Guwahati-19', 'State Approving Authority (DEE - Regular & Provincialised)')
+ON CONFLICT (id) DO UPDATE 
+SET name = EXCLUDED.name, designation = EXCLUDED.designation, department = EXCLUDED.department, role_tag = EXCLUDED.role_tag, updated_at = NOW();
+
 -- 4. Admin Credentials Table
 CREATE TABLE IF NOT EXISTS public.admin_users (
     id TEXT PRIMARY KEY DEFAULT 'admin_default',

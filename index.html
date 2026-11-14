@@ -808,17 +808,21 @@
       </div>
 
       <div class="admin-header-right">
-        <span class="admin-user-pill" id="adminOfficerPill" title="Click to Change State Officer Name" style="cursor: pointer;">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-          </svg>
-          <span id="adminOfficerNameDisplay">Dr. S. K. Sarma, ACS (Director)</span>
-        </span>
-        <button class="btn btn-sm btn-gold-outline" id="btnChangeOfficerName" title="Change State Officer / Signatory Details">
+        <div class="admin-officers-pills-wrap" id="adminOfficersHeaderGroup">
+          <span class="admin-user-pill officer-pill-dee" id="adminOfficerPillDEE" title="DEE State Officer (Regular Teachers) - Click to Change" style="cursor: pointer;">
+            <span class="officer-tag-badge dee">DEE</span>
+            <span id="adminOfficerDEEDisplay">Dr. S. K. Sarma, ACS (Director)</span>
+          </span>
+          <span class="admin-user-pill officer-pill-ssa" id="adminOfficerPillSSA" title="SSA State Officer (Contractual Teachers) - Click to Change" style="cursor: pointer;">
+            <span class="officer-tag-badge ssa">SSA</span>
+            <span id="adminOfficerSSADisplay">Dr. Om Prakash, IAS (Mission Director)</span>
+          </span>
+        </div>
+        <button class="btn btn-sm btn-gold-outline" id="btnChangeOfficerName" title="Change State Officers / Signatory Details (DEE & SSA)">
           <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
           </svg>
-          Change State Officer
+          State Officers
         </button>
         <button class="btn btn-outline-white" id="adminHeaderHomeBtn" title="Return to Admin Home Console">
           <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
@@ -895,8 +899,9 @@
               statuses, and issue authenticated government transfer order PDFs.</p>
             <div class="admin-meta-chips">
               <span class="meta-chip"><span>●</span> Academic Cycle 2026-27 Active</span>
-              <span class="meta-chip"><span>🏛️</span> Competent Authority: <strong id="bannerOfficerName">Dr. S. K. Sarma, ACS</strong></span>
-              <span class="meta-chip"><span>🔒</span> Official Portal Auth Level: State Nodal Admin</span>
+              <span class="meta-chip" id="bannerChipDEE" title="Directorate of Elementary Education (Regular Teachers)"><span>🏛️</span> DEE Authority: <strong id="bannerOfficerNameDEE">Dr. S. K. Sarma, ACS</strong> (Director)</span>
+              <span class="meta-chip" id="bannerChipSSA" title="Samagra Shiksha Assam (Contractual Teachers)"><span>🏫</span> SSA Authority: <strong id="bannerOfficerNameSSA">Dr. Om Prakash, IAS</strong> (Mission Director)</span>
+              <span class="meta-chip"><span>🔒</span> State Administration Console</span>
             </div>
           </div>
           <div class="admin-banner-badge-box">
@@ -1041,15 +1046,26 @@
                 <small>Review pending verifications and remarks</small>
               </div>
             </button>
-            <button class="hub-action-btn primary" id="hubChangeOfficerBtn" style="border-left-color: #f59e0b;">
-              <span class="hub-icon-circ" style="background: rgba(245,158,11,0.15); color: #d97706;">
+            <button class="hub-action-btn primary" id="hubChangeOfficerDEEBtn" style="border-left-color: #0284c7;">
+              <span class="hub-icon-circ" style="background: rgba(2,132,199,0.15); color: #0284c7;">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
               </span>
               <div class="hub-btn-text">
-                <strong>Change State Officer</strong>
-                <small id="hubOfficerNamePreview">Dr. S. K. Sarma, ACS (Director)</small>
+                <strong>DEE State Officer</strong>
+                <small id="hubOfficerDEEPreview">Dr. S. K. Sarma, ACS (Director)</small>
+              </div>
+            </button>
+            <button class="hub-action-btn primary" id="hubChangeOfficerSSABtn" style="border-left-color: #059669;">
+              <span class="hub-icon-circ" style="background: rgba(5,150,105,0.15); color: #059669;">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+              </span>
+              <div class="hub-btn-text">
+                <strong>SSA State Officer</strong>
+                <small id="hubOfficerSSAPreview">Dr. Om Prakash, IAS (Mission Director)</small>
               </div>
             </button>
           </div>
@@ -1999,7 +2015,7 @@
           <div class="paper-signature-row">
             <div class="digital-stamp">
               <span class="stamp-verified">✓ DIGITALLY SIGNED</span>
-              <span class="stamp-by">Director of Elementary Education</span>
+              <span class="stamp-by" id="previewStampBy">Director of Elementary Education</span>
               <span class="stamp-state">Government of Assam</span>
             </div>
             <div class="signature-box">
@@ -2024,38 +2040,85 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODAL: CHANGE STATE OFFICER / APPROVING AUTHORITY       -->
+  <!-- MODAL: CHANGE STATE OFFICERS / APPROVING AUTHORITIES     -->
   <!-- ======================================================== -->
   <div class="modal-backdrop" id="changeOfficerModal">
     <div class="modal-dialog-box modal-md">
       <div class="modal-header">
         <div>
-          <h4>Change State Officer / Competent Authority</h4>
-          <p>Update official Approving Authority details for console display and PDF transfer orders.</p>
+          <h4>State Competent Authorities (DEE & SSA)</h4>
+          <p>Configure official State Approving Authorities for Elementary Education and Samagra Shiksha.</p>
         </div>
         <button class="modal-close-btn" id="closeChangeOfficerModalBtn">✕</button>
       </div>
 
-      <form id="changeOfficerForm" class="modal-body">
-        <div class="form-group">
-          <label for="inputOfficerName">State Officer Full Name *</label>
-          <input type="text" id="inputOfficerName" class="form-control" placeholder="e.g. Dr. S. K. Sarma, ACS" required>
-          <small class="form-hint" style="color: #64748b; font-size: 0.8rem; margin-top: 4px; display: block;">This name will be displayed in the Administrative Console and on all generated PDF Transfer Orders.</small>
+      <!-- Department Selector Tabs inside Modal -->
+      <div class="officer-modal-tabs">
+        <button type="button" class="officer-modal-tab-btn active" id="modalTabDEE" data-dept="dee">
+          <span class="officer-tab-pill dee">DEE</span>
+          <span>Directorate of Elementary Education</span>
+        </button>
+        <button type="button" class="officer-modal-tab-btn" id="modalTabSSA" data-dept="ssa">
+          <span class="officer-tab-pill ssa">SSA</span>
+          <span>Samagra Shiksha Assam</span>
+        </button>
+      </div>
+
+      <form id="changeOfficerForm" class="modal-body" style="padding-top: 14px;">
+        <!-- DEE OFFICER PANEL -->
+        <div class="officer-tab-panel active" id="panelOfficerDEE">
+          <div class="officer-panel-hint dee-hint">
+            <svg class="hint-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span><strong>DEE Authority:</strong> Competent Approving Authority for <strong>Regular & Provincialised</strong> teachers under the Directorate of Elementary Education.</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerNameDEE">DEE Officer Full Name *</label>
+            <input type="text" id="inputOfficerNameDEE" class="form-control" placeholder="e.g. Dr. S. K. Sarma, ACS" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerDesignationDEE">Official Designation / Post *</label>
+            <input type="text" id="inputOfficerDesignationDEE" class="form-control" placeholder="e.g. Director of Elementary Education" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerDepartmentDEE">Department & Location *</label>
+            <input type="text" id="inputOfficerDepartmentDEE" class="form-control" placeholder="e.g. Directorate of Elementary Education, Kahilipara, Guwahati-19" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerRoleTagDEE">Authority Scope / Role</label>
+            <input type="text" id="inputOfficerRoleTagDEE" class="form-control" placeholder="e.g. State Approving Authority (DEE - Regular & Provincialised)">
+          </div>
         </div>
 
-        <div class="form-group" style="margin-top: 14px;">
-          <label for="inputOfficerDesignation">Official Designation / Post *</label>
-          <input type="text" id="inputOfficerDesignation" class="form-control" placeholder="e.g. Director of Elementary Education" required>
-        </div>
+        <!-- SSA OFFICER PANEL -->
+        <div class="officer-tab-panel" id="panelOfficerSSA" style="display: none;">
+          <div class="officer-panel-hint ssa-hint">
+            <svg class="hint-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span><strong>SSA Authority:</strong> Competent Approving Authority for <strong>Contractual & SSA</strong> teachers under Samagra Shiksha Assam.</span>
+          </div>
 
-        <div class="form-group" style="margin-top: 14px;">
-          <label for="inputOfficerDepartment">Department & Location *</label>
-          <input type="text" id="inputOfficerDepartment" class="form-control" placeholder="e.g. Government of Assam, Kahilipara, Guwahati-19" required>
-        </div>
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerNameSSA">SSA Officer Full Name *</label>
+            <input type="text" id="inputOfficerNameSSA" class="form-control" placeholder="e.g. Dr. Om Prakash, IAS">
+          </div>
 
-        <div class="form-group" style="margin-top: 14px;">
-          <label for="inputOfficerRoleTag">Authority Scope / Role</label>
-          <input type="text" id="inputOfficerRoleTag" class="form-control" placeholder="e.g. State Nodal Approving Authority">
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerDesignationSSA">Official Designation / Post *</label>
+            <input type="text" id="inputOfficerDesignationSSA" class="form-control" placeholder="e.g. Mission Director, Samagra Shiksha Assam">
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerDepartmentSSA">Department & Location *</label>
+            <input type="text" id="inputOfficerDepartmentSSA" class="form-control" placeholder="e.g. Axom Sarba Siksha Abhiyan Mission, Kahilipara, Guwahati-19">
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="inputOfficerRoleTagSSA">Authority Scope / Role</label>
+            <input type="text" id="inputOfficerRoleTagSSA" class="form-control" placeholder="e.g. State Approving Authority (SSA - Contractual)">
+          </div>
         </div>
 
         <div class="modal-footer" style="padding: 18px 0 0; margin-top: 22px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
@@ -2064,7 +2127,7 @@
             <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
             </svg>
-            Save State Officer
+            Save State Authorities
           </button>
         </div>
       </form>
