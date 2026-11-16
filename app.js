@@ -517,7 +517,6 @@
           localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(officerInfo));
         } catch (e) { }
 
-        ADMIN_CREDENTIALS.name = stateOfficers.dee.name;
         updateOfficerDisplays();
       }
     } catch (e) {
@@ -748,7 +747,6 @@
             ssa: { ...DEFAULT_OFFICERS.ssa }
           };
         }
-        saveOfficerInfo();
       }
     } catch (e) {
       stateOfficers = {
@@ -757,9 +755,6 @@
       };
     }
     officerInfo = stateOfficers.dee;
-    if (officerInfo && officerInfo.name) {
-      ADMIN_CREDENTIALS.name = officerInfo.name;
-    }
 
     // Cloud sync from Supabase HRMS
     syncOfficerFromSupabase();
@@ -771,9 +766,6 @@
       localStorage.setItem(STORAGE_KEY_OFFICER, JSON.stringify(stateOfficers.dee));
     } catch (e) { }
     officerInfo = stateOfficers.dee;
-    if (officerInfo && officerInfo.name) {
-      ADMIN_CREDENTIALS.name = officerInfo.name;
-    }
 
     // Cloud sync to Supabase HRMS
     syncOfficerToSupabase();
@@ -948,7 +940,7 @@
     // Form submit
     const form = document.getElementById('changeOfficerForm');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // Read DEE
@@ -985,6 +977,13 @@
         officerInfo = stateOfficers.dee;
         saveOfficerInfo();
         updateOfficerDisplays();
+
+        // Ensure cloud database sync is committed
+        try {
+          await syncOfficerToSupabase();
+        } catch (err) {
+          console.warn('[Supabase] Officer sync error:', err);
+        }
 
         logActivity('OFFICERS_UPDATED', `State Approving Authorities updated - DEE: "${stateOfficers.dee.name}", SSA: "${stateOfficers.ssa.name}"`);
 
@@ -1171,6 +1170,7 @@
 
     updatePublicHomeAdminStatus();
     updatePublicHomeTeacherStatus();
+    updateOfficerDisplays();
 
     // Refresh UI according to view
     if (viewId === 'viewTeacherDashboard') {
