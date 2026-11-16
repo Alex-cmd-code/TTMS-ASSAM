@@ -1358,26 +1358,57 @@
             }
           })();
         } else {
-          // Teacher Check
-          loadUsers();
-          const cleanUser = username.trim();
-          const teacher = usersList.find(u =>
-            (u.username === cleanUser || (u.mobile && u.mobile === cleanUser) || (u.empCode && u.empCode === cleanUser)) &&
-            u.password === password
-          );
-          if (teacher) {
-            clearAdminSession();
-            isAdminPreview = false;
-            previewingTeacherId = null;
-            saveSession(teacher);
-            logActivity('TEACHER_LOGIN', `Teacher "${teacher.name}" logged into portal.`, { teacherId: teacher.id }, teacher.id);
-            document.getElementById('loginModal').classList.remove('show');
-            showToast(`Welcome back, ${teacher.name}!`, 'success');
-            showView('viewTeacherDashboard');
-          } else {
-            showToast('Invalid Teacher Username or Password. Please check your credentials.', 'error');
-            generateCaptcha();
-          }
+          // Teacher Check (with Supabase direct verification & document sync)
+          (async () => {
+            loadUsers();
+            const cleanUser = username.trim();
+            let teacher = usersList.find(u =>
+              (u.username === cleanUser || (u.mobile && u.mobile === cleanUser) || (u.empCode && u.empCode === cleanUser)) &&
+              u.password === password
+            );
+
+            // Directly query Supabase for fresh teacher record and all uploaded documents
+            const client = getSupabase();
+            if (client) {
+              try {
+                const { data: dbTeachers, error: dbErr } = await client
+                  .from('teachers')
+                  .select('*, documents(*)')
+                  .or(`username.eq.${cleanUser},mobile.eq.${cleanUser},emp_code.eq.${cleanUser}`)
+                  .eq('password', password);
+
+                if (!dbErr && Array.isArray(dbTeachers) && dbTeachers.length > 0) {
+                  const mapped = mapTeacherFromSupabase(dbTeachers[0]);
+                  teacher = mapped;
+                  const idx = usersList.findIndex(u => u.id === mapped.id || u.username === mapped.username);
+                  if (idx !== -1) {
+                    usersList[idx] = mapped;
+                  } else {
+                    usersList.unshift(mapped);
+                  }
+                  try {
+                    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(usersList));
+                  } catch (e) { }
+                }
+              } catch (e) {
+                console.warn('[Supabase] Teacher login direct sync error:', e);
+              }
+            }
+
+            if (teacher) {
+              clearAdminSession();
+              isAdminPreview = false;
+              previewingTeacherId = null;
+              saveSession(teacher);
+              logActivity('TEACHER_LOGIN', `Teacher "${teacher.name}" logged into portal.`, { teacherId: teacher.id }, teacher.id);
+              document.getElementById('loginModal').classList.remove('show');
+              showToast(`Welcome back, ${teacher.name}!`, 'success');
+              showView('viewTeacherDashboard');
+            } else {
+              showToast('Invalid Teacher Username or Password. Please check your credentials.', 'error');
+              generateCaptcha();
+            }
+          })();
         }
       });
     }
@@ -1641,8 +1672,13 @@
       topDownloadDocsBtn.addEventListener('click', () => {
         const user = getActiveTeacher();
         if (!user) return;
-        if (user.documents && user.documents.length > 0) {
-          downloadDocument(user.documents[0], user);
+        const docs = user.documents || [];
+        if (docs.length === 1) {
+          downloadDocument(docs[0], user);
+        } else if (docs.length > 1) {
+          const sec = document.getElementById('sectionDocuments');
+          if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+          showToast(`All ${docs.length} uploaded documents are available for download in the Documents section below.`, 'info');
         } else {
           showToast('No official documents have been uploaded for download yet.', 'info');
         }
@@ -1946,84 +1982,111 @@
     if (!user) return;
     if (!user.documents) user.documents = [];
 
-    const docs = user.documents || [];
-    if (docsCountBadge) {
-      docsCountBadge.textContent = `${docs.length} Document${docs.length === 1 ? '' : 's'}`;
-    }
-
-    if (docs.length === 0) {
-      docsListContainer.innerHTML = '';
-      if (emptyDocsMessage) {
-        emptyDocsMessage.style.display = 'block';
-        emptyDocsMessage.innerHTML = `
-          <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-          </svg>
-          <h4>No Documents Uploaded Yet</h4>
-          <p>Your application is currently <strong>${escapeHtml(user.status || 'Pending')}</strong> (${escapeHtml(user.latestRemark || 'Under Review')}). Once approved and signed by the Directorate, the official Transfer Order PDF will be available here for download.</p>
-        `;
+    function renderCards(docs) {
+      if (docsCountBadge) {
+        docsCountBadge.textContent = `${docs.length} Document${docs.length === 1 ? '' : 's'}`;
       }
-      return;
+
+      if (docs.length === 0) {
+        docsListContainer.innerHTML = '';
+        if (emptyDocsMessage) {
+          emptyDocsMessage.style.display = 'block';
+          emptyDocsMessage.innerHTML = `
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+            <h4>No Documents Uploaded Yet</h4>
+            <p>Your application is currently <strong>${escapeHtml(user.status || 'Pending')}</strong> (${escapeHtml(user.latestRemark || 'Under Review')}). Once approved and signed by the Directorate, the official Transfer Order PDF will be available here for download.</p>
+          `;
+        }
+        return;
+      }
+
+      if (emptyDocsMessage) emptyDocsMessage.style.display = 'none';
+      docsListContainer.innerHTML = '';
+
+      docs.forEach(doc => {
+        const card = document.createElement('div');
+        card.className = 'doc-download-card';
+
+        card.innerHTML = `
+          <div class="doc-meta-left">
+            <div class="pdf-icon-badge">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+              PDF
+            </div>
+            <div class="doc-info-block">
+              <div class="doc-title-row">
+                <strong>${escapeHtml(doc.title)}</strong>
+                <span class="doc-category-tag">${escapeHtml(doc.category || 'Official Order')}</span>
+              </div>
+              <div class="doc-details-subline">
+                <span>Ref: <strong>${escapeHtml(doc.refNumber || user.appNumber)}</strong></span> • 
+                <span>Uploaded: ${escapeHtml(doc.uploadedAt)}</span> • 
+                <span>Size: ${escapeHtml(doc.fileSize || '340 KB')}</span>
+              </div>
+              ${doc.remarks ? `<small class="text-primary mt-2" style="display:block;"><strong>Admin Note:</strong> ${escapeHtml(doc.remarks)}</small>` : ''}
+            </div>
+          </div>
+
+          <div class="doc-action-cluster">
+            <button class="btn btn-secondary btn-sm btn-preview-doc" data-doc-id="${escapeHtml(doc.id)}">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              Preview
+            </button>
+            <button class="btn btn-navy btn-sm btn-download-doc" data-doc-id="${escapeHtml(doc.id)}">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Download PDF
+            </button>
+          </div>
+        `;
+
+        docsListContainer.appendChild(card);
+      });
+
+      // Attach click events for Preview and Download
+      docsListContainer.querySelectorAll('.btn-preview-doc').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const docId = btn.getAttribute('data-doc-id');
+          const doc = docs.find(d => d.id === docId);
+          if (doc) previewDocument(doc, user);
+        });
+      });
+
+      docsListContainer.querySelectorAll('.btn-download-doc').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const docId = btn.getAttribute('data-doc-id');
+          const doc = docs.find(d => d.id === docId);
+          if (doc) downloadDocument(doc, user);
+        });
+      });
     }
 
-    if (emptyDocsMessage) emptyDocsMessage.style.display = 'none';
-    docsListContainer.innerHTML = '';
+    // 1. Initial render from currently available in-memory data
+    renderCards(user.documents || []);
 
-    docs.forEach(doc => {
-      const card = document.createElement('div');
-      card.className = 'doc-download-card';
-
-      card.innerHTML = `
-        <div class="doc-meta-left">
-          <div class="pdf-icon-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            PDF
-          </div>
-          <div class="doc-info-block">
-            <div class="doc-title-row">
-              <strong>${escapeHtml(doc.title)}</strong>
-              <span class="doc-category-tag">${escapeHtml(doc.category || 'Official Order')}</span>
-            </div>
-            <div class="doc-details-subline">
-              <span>Ref: <strong>${escapeHtml(doc.refNumber || user.appNumber)}</strong></span> • 
-              <span>Uploaded: ${escapeHtml(doc.uploadedAt)}</span> • 
-              <span>Size: ${escapeHtml(doc.fileSize || '340 KB')}</span>
-            </div>
-            ${doc.remarks ? `<small class="text-primary mt-2" style="display:block;"><strong>Admin Note:</strong> ${escapeHtml(doc.remarks)}</small>` : ''}
-          </div>
-        </div>
-
-        <div class="doc-action-cluster">
-          <button class="btn btn-secondary btn-sm btn-preview-doc" data-doc-id="${escapeHtml(doc.id)}">
-            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-            Preview
-          </button>
-          <button class="btn btn-navy btn-sm btn-download-doc" data-doc-id="${escapeHtml(doc.id)}">
-            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            Download PDF
-          </button>
-        </div>
-      `;
-
-      docsListContainer.appendChild(card);
-    });
-
-    // Attach click events for Preview and Download
-    docsListContainer.querySelectorAll('.btn-preview-doc').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const docId = btn.getAttribute('data-doc-id');
-        const doc = docs.find(d => d.id === docId);
-        if (doc) previewDocument(doc, user);
-      });
-    });
-
-    docsListContainer.querySelectorAll('.btn-download-doc').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const docId = btn.getAttribute('data-doc-id');
-        const doc = docs.find(d => d.id === docId);
-        if (doc) downloadDocument(doc, user);
-      });
-    });
+    // 2. Direct query to Supabase HRMS to ensure 100% of all uploaded documents are loaded live
+    const client = getSupabase();
+    if (client && user.id) {
+      client
+        .from('documents')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && Array.isArray(data)) {
+            const freshDocs = data.map(mapDocFromSupabase);
+            user.documents = freshDocs;
+            const target = usersList.find(u => u.id === user.id);
+            if (target) target.documents = freshDocs;
+            if (currentSession && (currentSession.id === user.id || currentSession.username === user.username)) {
+              currentSession.documents = freshDocs;
+            }
+            renderCards(freshDocs);
+          }
+        })
+        .catch(err => console.warn('[Supabase] Live teacher doc sync error:', err));
+    }
   }
 
   // ==========================================
@@ -2051,7 +2114,10 @@
     if (tabId === 'tabAdminHome') renderAdminHome();
     else if (tabId === 'tabUsers') renderAdminUserTable();
     else if (tabId === 'tabApprovals') renderAdminApprovalsTable();
-    else if (tabId === 'tabDocs') renderAdminAllDocsTable();
+    else if (tabId === 'tabDocs') {
+      populateTeacherSelectDropdown();
+      renderAdminAllDocsTable();
+    }
   }
 
   function setupAdminEvents() {
@@ -2519,9 +2585,41 @@
           type: file.type
         };
         selectedFileName.innerHTML = `<strong>Selected:</strong> ${file.name} (${pendingUploadedFile.size})`;
-        showToast(`Attached file: ${file.name}`, 'info');
+
+        // Auto-match target teacher by application number or name in filename
+        const cleanName = file.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const matched = usersList.find(u => {
+          const appClean = (u.appNumber || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          const nameClean = (u.name || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+          return (appClean && (cleanName.includes(appClean) || appClean.includes(cleanName))) ||
+                 (nameClean && cleanName.includes(nameClean));
+        });
+
+        if (matched) {
+          const select = document.getElementById('docTargetUserSelect');
+          if (select) {
+            select.value = matched.id;
+            updateTargetTeacherPreviewBadge();
+          }
+          showToast(`Attached "${file.name}" • Auto-matched to: ${matched.name} (${matched.appNumber})`, 'success');
+        } else {
+          showToast(`Attached file: ${file.name}`, 'info');
+        }
+
+        // Auto-populate Title if empty
+        const titleInput = document.getElementById('docTitleInput');
+        if (titleInput && !titleInput.value.trim()) {
+          const autoTitle = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+          titleInput.value = autoTitle;
+        }
       };
       reader.readAsDataURL(file);
+    }
+
+    // Target Teacher dropdown selection preview
+    const docTargetUserSelect = document.getElementById('docTargetUserSelect');
+    if (docTargetUserSelect) {
+      docTargetUserSelect.addEventListener('change', updateTargetTeacherPreviewBadge);
     }
 
     // Admin Upload Document Form Submit
@@ -2613,7 +2711,7 @@
         }
 
         saveUsers();
-        logActivity('DOCUMENT_ISSUED', `Document "${title}" (${category}) issued for teacher "${targetUser.name}". Ref: ${refNum}`, { teacherId: targetUser.id, docId: newDoc.id, category: category }, targetUser.id);
+        logActivity('DOCUMENT_ISSUED', `Document "${title}" (${category}) issued for teacher "${targetUser.name}". Ref: ${refNumber}`, { teacherId: targetUser.id, docId: newDoc.id, category: category }, targetUser.id);
         adminUploadDocForm.reset();
         pendingUploadedFile = null;
         selectedFileName.textContent = 'Click or Drag & Drop a PDF file here';
@@ -2904,7 +3002,10 @@
         const userId = btn.getAttribute('data-user-id');
         switchAdminTab('tabDocs');
         const select = document.getElementById('docTargetUserSelect');
-        if (select) select.value = userId;
+        if (select) {
+          select.value = userId;
+          updateTargetTeacherPreviewBadge();
+        }
         document.getElementById('docTitleInput').focus();
       });
     });
@@ -3182,7 +3283,10 @@
         const userId = btn.getAttribute('data-user-id');
         switchAdminTab('tabDocs');
         const select = document.getElementById('docTargetUserSelect');
-        if (select) select.value = userId;
+        if (select) {
+          select.value = userId;
+          updateTargetTeacherPreviewBadge();
+        }
         document.getElementById('docTitleInput').focus();
       });
     });
@@ -3241,17 +3345,42 @@
     });
   }
 
+  function updateTargetTeacherPreviewBadge() {
+    const select = document.getElementById('docTargetUserSelect');
+    const badge = document.getElementById('targetTeacherPreviewBadge');
+    const textSpan = document.getElementById('targetTeacherPreviewText');
+    if (!select || !badge || !textSpan) return;
+
+    const teacher = usersList.find(u => u.id === select.value);
+    if (teacher) {
+      const docCount = (teacher.documents && teacher.documents.length) || 0;
+      textSpan.innerHTML = `<strong>${escapeHtml(teacher.name)}</strong> (${escapeHtml(teacher.appNumber || teacher.username)}) &bull; ${escapeHtml(teacher.school || 'School')} &bull; Existing Uploaded Docs: <span style="font-weight:700; color:#0369a1;">${docCount}</span>`;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
   function populateTeacherSelectDropdown() {
     const select = document.getElementById('docTargetUserSelect');
     if (!select) return;
 
+    const currentVal = select.value;
     select.innerHTML = '';
     usersList.forEach(user => {
       const option = document.createElement('option');
       option.value = user.id;
-      option.textContent = `${user.name} - ${user.username} (${user.appNumber})`;
+      const count = (user.documents && user.documents.length) || 0;
+      option.textContent = `${user.name} - ${user.username} (${user.appNumber}) [${count} doc${count === 1 ? '' : 's'}]`;
       select.appendChild(option);
     });
+
+    if (currentVal && usersList.some(u => u.id === currentVal)) {
+      select.value = currentVal;
+    } else if (usersList.length > 0) {
+      select.value = usersList[0].id;
+    }
+    updateTargetTeacherPreviewBadge();
   }
 
   function renderAdminAllDocsTable() {
@@ -3401,8 +3530,8 @@
   }
 
   function downloadDocument(doc, user) {
-    // If actual uploaded file data URL exists, download that exact file
-    if (doc.fileData) {
+    // 1. If uploaded data URI exists, download that exact file
+    if (doc.fileData && doc.fileData.startsWith('data:')) {
       const a = document.createElement('a');
       a.href = doc.fileData;
       a.download = doc.fileName || `${doc.title.replace(/\s+/g, '_')}.pdf`;
@@ -3413,7 +3542,21 @@
       return;
     }
 
-    // Otherwise generate professional Assam Government PDF using jsPDF
+    // 2. If storageUrl or remote URL exists, download/open from cloud storage
+    const fileUrl = doc.storageUrl || (doc.fileData && doc.fileData.startsWith('http') ? doc.fileData : null);
+    if (fileUrl) {
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.target = '_blank';
+      a.download = doc.fileName || `${doc.title.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast(`Downloading: ${doc.fileName || doc.title}`, 'success');
+      return;
+    }
+
+    // 3. Otherwise generate professional Assam Government PDF using jsPDF
     generateOfficialAssamGovtPdf(doc, user);
   }
 

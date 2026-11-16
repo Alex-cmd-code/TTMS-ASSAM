@@ -1252,8 +1252,10 @@
                 <select id="docTargetUserSelect" class="form-control" required>
                   <!-- Populated dynamically with users -->
                 </select>
-                <small class="form-help">The selected teacher will be able to download this document from their
-                  dashboard.</small>
+                <div class="target-teacher-preview-badge" id="targetTeacherPreviewBadge" style="margin-top: 8px; padding: 8px 12px; background: #f0f7fa; border: 1px solid #c2dfe9; border-radius: 6px; font-size: 0.8rem; color: #0e4c64; display: none;">
+                  <strong>Selected Target:</strong> <span id="targetTeacherPreviewText">-</span>
+                </div>
+                <small class="form-help">The selected teacher will be able to download this document from their dashboard.</small>
               </div>
 
               <div class="form-group">
