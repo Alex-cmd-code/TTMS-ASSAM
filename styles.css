@@ -1497,6 +1497,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 20px;
   padding-bottom: 12px;
@@ -1506,6 +1507,7 @@ body {
 .header-status-countdown-wrap {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 18px;
   flex-shrink: 0;
 }

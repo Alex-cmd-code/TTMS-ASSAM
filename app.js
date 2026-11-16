@@ -1723,9 +1723,16 @@
     const countdownCard = document.getElementById('transferOrderCountdownCard');
     if (!countdownCard) return;
 
-    // Hide countdown if application was rejected
-    if (user && user.status === 'Rejected') {
+    // Strict Requirement: Show ONLY for Approved Teachers
+    const statusClean = (user && user.status ? String(user.status) : '').trim().toLowerCase();
+    const isApproved = statusClean === 'approved';
+
+    if (!isApproved) {
       countdownCard.style.display = 'none';
+      if (countdownTimerInterval) {
+        clearInterval(countdownTimerInterval);
+        countdownTimerInterval = null;
+      }
       return;
     }
 
