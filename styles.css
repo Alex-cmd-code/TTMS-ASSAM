@@ -1602,6 +1602,7 @@ body {
     align-items: flex-start;
     gap: 16px;
   }
+
   .header-status-countdown-wrap {
     width: 100%;
     justify-content: space-between;
@@ -1615,19 +1616,24 @@ body {
     width: 100%;
     padding: 10px 12px 12px 12px;
   }
+
   .countdown-card-header {
     font-size: 0.78rem;
   }
+
   .countdown-blocks-row {
     gap: 6px;
   }
+
   .countdown-block {
     min-width: 44px;
     padding: 5px 4px 6px 4px;
   }
+
   .countdown-number {
     font-size: 1.15rem;
   }
+
   .countdown-unit {
     font-size: 0.62rem;
   }
