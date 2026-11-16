@@ -540,7 +540,7 @@
 
         <!-- SECTION 1: Application Overview (Matching Image 1) -->
         <section class="dash-section-card" id="sectionOverview">
-          <div class="dash-section-header">
+          <div class="dash-section-header dash-header-overview">
             <div class="section-title-wrapper">
               <div class="sec-icon-circle blue-circle">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -553,9 +553,38 @@
                 <p class="section-subtext">Current request status, recent activity and approval progress.</p>
               </div>
             </div>
-            <div class="status-pill status-pending" id="overviewStatusPill">
-              <span class="status-icon">⏳</span>
-              <span id="overviewStatusText">Pending</span>
+
+            <div class="header-status-countdown-wrap">
+              <div class="status-pill status-pending" id="overviewStatusPill">
+                <span class="status-icon">⏳</span>
+                <span id="overviewStatusText">Pending</span>
+              </div>
+
+              <!-- Live Countdown Timeline Widget (Matching Government TTMS Portal) -->
+              <div class="transfer-order-countdown-card" id="transferOrderCountdownCard">
+                <div class="countdown-card-header">
+                  <span class="countdown-header-line">Transfer order download button available</span>
+                  <span class="countdown-header-line">for next</span>
+                </div>
+                <div class="countdown-blocks-row">
+                  <div class="countdown-block">
+                    <span class="countdown-number" id="countdownDays">10</span>
+                    <span class="countdown-unit">Days</span>
+                  </div>
+                  <div class="countdown-block">
+                    <span class="countdown-number" id="countdownHours">2</span>
+                    <span class="countdown-unit">Hours</span>
+                  </div>
+                  <div class="countdown-block">
+                    <span class="countdown-number" id="countdownMinutes">19</span>
+                    <span class="countdown-unit">Minutes</span>
+                  </div>
+                  <div class="countdown-block">
+                    <span class="countdown-number" id="countdownSeconds">10</span>
+                    <span class="countdown-unit">Seconds</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

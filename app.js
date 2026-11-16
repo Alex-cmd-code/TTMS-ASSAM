@@ -693,6 +693,10 @@
 
   function clearSession() {
     currentSession = null;
+    if (countdownTimerInterval) {
+      clearInterval(countdownTimerInterval);
+      countdownTimerInterval = null;
+    }
     try {
       sessionStorage.removeItem(STORAGE_KEY_SESSION);
       localStorage.removeItem(STORAGE_KEY_SESSION);
@@ -1706,6 +1710,80 @@
   }
 
   // ==========================================
+  // TRANSFER ORDER COUNTDOWN TIMELINE TIMER
+  // ==========================================
+  let countdownTimerInterval = null;
+
+  function initTransferOrderCountdown(user) {
+    if (countdownTimerInterval) {
+      clearInterval(countdownTimerInterval);
+      countdownTimerInterval = null;
+    }
+
+    const countdownCard = document.getElementById('transferOrderCountdownCard');
+    if (!countdownCard) return;
+
+    // Hide countdown if application was rejected
+    if (user && user.status === 'Rejected') {
+      countdownCard.style.display = 'none';
+      return;
+    }
+
+    countdownCard.style.display = 'flex';
+
+    const daysEl = document.getElementById('countdownDays');
+    const hoursEl = document.getElementById('countdownHours');
+    const minutesEl = document.getElementById('countdownMinutes');
+    const secondsEl = document.getElementById('countdownSeconds');
+
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+
+    // 10 Days, 2 Hours, 19 Minutes, 10 Seconds window matching Government TTMS Portal
+    const storageKey = `ttms_countdown_deadline_${user ? user.id : 'default'}`;
+    let deadline = parseInt(localStorage.getItem(storageKey), 10);
+
+    const INITIAL_DURATION_MS = (10 * 24 * 3600 * 1000) + (2 * 3600 * 1000) + (19 * 60 * 1000) + (10 * 1000);
+
+    if (!deadline || isNaN(deadline) || deadline <= Date.now()) {
+      deadline = Date.now() + INITIAL_DURATION_MS;
+      try {
+        localStorage.setItem(storageKey, deadline.toString());
+      } catch (e) { }
+    }
+
+    function tick() {
+      const now = Date.now();
+      const diff = deadline - now;
+
+      if (diff <= 0) {
+        daysEl.textContent = '0';
+        hoursEl.textContent = '0';
+        minutesEl.textContent = '0';
+        secondsEl.textContent = '0';
+        if (countdownTimerInterval) {
+          clearInterval(countdownTimerInterval);
+          countdownTimerInterval = null;
+        }
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      daysEl.textContent = days;
+      hoursEl.textContent = hours;
+      minutesEl.textContent = minutes;
+      secondsEl.textContent = seconds;
+    }
+
+    tick();
+    countdownTimerInterval = setInterval(tick, 1000);
+  }
+
+  // ==========================================
   // 8. RENDER TEACHER DASHBOARD (Screenshot 1)
   // ==========================================
   function renderTeacherDashboard() {
@@ -1750,6 +1828,9 @@
     if (bannerStatusText) bannerStatusText.textContent = statusMeta.label;
     const overviewStatusText = document.getElementById('overviewStatusText');
     if (overviewStatusText) overviewStatusText.textContent = statusMeta.label;
+
+    // Initialize live transfer order countdown timeline
+    initTransferOrderCountdown(user);
 
     // 3 Metric Cards (Submitted On, Last Action On, Latest Remark)
     const metricSub = document.getElementById('metricSubmittedOn');
